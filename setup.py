@@ -43,4 +43,13 @@ setup(
     python_requires=">=3.6,<4",
     url=f"https://github.com/ARMmbed/{PROJECT_SLUG}",
     version=__version__,
+    entry_points={
+        "console_scripts": [
+            f"mbedtoolsdevices={SOURCE_DIR}.mbed_tools.cli:cli",
+            f"mbed-devices={SOURCE_DIR}.mbed_tools.cli:cli",
+            f"mbeddevices={SOURCE_DIR}.mbed_tools.cli:cli",
+            f"mbed-tools-devices={SOURCE_DIR}.mbed_tools.cli:cli",
+            f"mbedtools-devices={SOURCE_DIR}.mbed_tools.cli:cli",
+        ],
+    },
 )
