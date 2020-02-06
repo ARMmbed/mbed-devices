@@ -34,10 +34,7 @@ setup(
     description="List connected devices running Mbed OS",
     keywords="Arm Mbed OS MbedOS list, devices, ls, mbed, mbedos, Mbed OS, tools",
     include_package_data=True,
-    install_requires=[
-        "python-dotenv",
-        "Click==7.0",
-    ],
+    install_requires=["python-dotenv", "Click==7.0"],
     license="Apache 2.0",
     long_description_content_type="text/markdown",
     long_description=long_description,
