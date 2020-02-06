@@ -1,0 +1,16 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+coverage = "*"
+flake8 = "*"
+flake8-docstrings = "*"
+flake8-black = "*"
+mypy = ">=0.500"
+pytest = "*"
+pytest-cov = "*"
+wheel = "*"
+mbed-devices = {editable = true, path = "."}
+mbed-tools-ci-scripts = "*"
