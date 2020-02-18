@@ -2,10 +2,11 @@
 import logging
 import pathlib
 import re
-from typing import List, Optional
+from typing import List, Optional, Dict
 from mbed_devices._internal.base_detector import DeviceDetector
 from mbed_devices._internal.candidate import Candidate
 from mbed_devices._internal.darwin import system_profiler, ioreg, diskutil
+from mbed_tools_lib.logging import log_exception
 
 
 logger = logging.getLogger(__name__)
@@ -37,21 +38,31 @@ class DarwinDeviceDetector(DeviceDetector):
 
 
 def _build_candidate(device_data: system_profiler.USBDeviceData) -> Candidate:
-    vendor_id = device_data.get("vendor_id", "")
-    product_id = device_data.get("product_id", "")
-    serial_number = device_data.get("serial_num", "")
-    mount_points = _get_mount_points(device_data)
-    serial_port = _get_serial_port(device_data)
+    assembled_data = _assemble_candidate_data(device_data)
     try:
-        return Candidate(
-            vendor_id=vendor_id,
-            product_id=product_id,
-            serial_number=serial_number,
-            mount_points=mount_points,
-            serial_port=serial_port,
-        )
-    except ValueError:
+        return Candidate(**assembled_data)
+    except ValueError as e:
+        log_exception(logger, e)
         raise InvalidCandidateDataError
+
+
+def _assemble_candidate_data(device_data: system_profiler.USBDeviceData) -> Dict:
+    return {
+        "vendor_id": _format_vendor_id(device_data.get("vendor_id", "")),
+        "product_id": device_data.get("product_id", ""),
+        "serial_number": device_data.get("serial_num", ""),
+        "mount_points": _get_mount_points(device_data),
+        "serial_port": _get_serial_port(device_data),
+    }
+
+
+def _format_vendor_id(vendor_id: str) -> str:
+    """Strips vendor name from vendor_id field.
+
+    Example:
+        >>> _format_vendor_id("0x1234 (Nice Vendor Inc.)")  # "0x1234"
+    """
+    return vendor_id.split(maxsplit=1)[0]
 
 
 def _get_mount_points(device_data: system_profiler.USBDeviceData) -> List[pathlib.Path]:

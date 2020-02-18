@@ -6,6 +6,7 @@ from mbed_devices._internal.darwin import system_profiler, diskutil, ioreg
 from mbed_devices._internal.darwin.device_detector import (
     DarwinDeviceDetector,
     InvalidCandidateDataError,
+    _assemble_candidate_data,
     _build_candidate,
     _build_ioreg_device_name,
     _get_mount_points,
@@ -38,10 +39,33 @@ class TestDarwinDeviceDetector(TestCase):
         _build_candidate.assert_called_with(device_data)
 
 
+@mock.patch("mbed_devices._internal.darwin.device_detector._assemble_candidate_data")
 class TestBuildCandidate(TestCase):
-    @mock.patch("mbed_devices._internal.darwin.device_detector._get_serial_port")
-    @mock.patch("mbed_devices._internal.darwin.device_detector._get_mount_points")
-    def test_glues_device_data_from_various_sources_and_builds_a_candidate(self, _get_mount_points, _get_serial_port):
+    def test_builds_candidate_using_assembled_data(self, _assemble_candidate_data):
+        device_data = {
+            "vendor_id": "0xff",
+            "product_id": "0x24",
+            "serial_number": "123456",
+            "mount_points": ["/Volumes/A"],
+            "serial_port": "port-1",
+        }
+        _assemble_candidate_data.return_value = device_data
+
+        self.assertEqual(
+            _build_candidate(device_data), Candidate(**device_data),
+        )
+
+    @mock.patch("mbed_devices._internal.darwin.device_detector.Candidate")
+    def test_raises_if_candidate_cannot_be_built(self, Candidate, _assemble_candidate_data):
+        Candidate.side_effect = ValueError
+        with self.assertRaises(InvalidCandidateDataError):
+            _build_candidate({})
+
+
+@mock.patch("mbed_devices._internal.darwin.device_detector._get_serial_port")
+@mock.patch("mbed_devices._internal.darwin.device_detector._get_mount_points")
+class TestAssembleCandidateData(TestCase):
+    def test_glues_device_data_from_various_sources(self, _get_mount_points, _get_serial_port):
         device_data = {
             "vendor_id": "0xff",
             "product_id": "0x24",
@@ -51,15 +75,20 @@ class TestBuildCandidate(TestCase):
         _get_mount_points.return_value = ["/Volumes/A"]
 
         self.assertEqual(
-            _build_candidate(device_data),
-            Candidate(
-                vendor_id=device_data.get("vendor_id"),
-                product_id=device_data.get("product_id"),
-                serial_number=device_data.get("serial_num"),
-                serial_port=_get_serial_port.return_value,
-                mount_points=_get_mount_points.return_value,
-            ),
+            _assemble_candidate_data(device_data),
+            {
+                "vendor_id": device_data.get("vendor_id"),
+                "product_id": device_data.get("product_id"),
+                "serial_number": device_data.get("serial_num"),
+                "serial_port": _get_serial_port.return_value,
+                "mount_points": _get_mount_points.return_value,
+            },
         )
+
+    def test_formats_vendor_id_containing_vendor_name(self, _get_mount_points, _get_serial_port):
+        device_data = {"vendor_id": "0x12  (SomeVendor)"}
+        result = _assemble_candidate_data(device_data)
+        self.assertEqual(result["vendor_id"], "0x12")
 
 
 class TestGetMountPoints(TestCase):
