@@ -1,0 +1,71 @@
+import pathlib
+from unittest import TestCase
+from mbed_devices._internal.candidate import Candidate
+
+
+def build_candidate_data(**overrides):
+    defaults = {
+        "product_id": "0x1234",
+        "vendor_id": "0x5678",
+        "mount_points": [pathlib.Path("./foo")],
+        "serial_number": "qwer",
+        "serial_port": "COM1",
+    }
+    return {**defaults, **overrides}
+
+
+class TestCandidate(TestCase):
+    def test_produces_a_valid_candidate(self):
+        candidate_data = build_candidate_data()
+        candidate = Candidate(**candidate_data)
+
+        self.assertEqual(candidate.product_id, candidate_data["product_id"])
+        self.assertEqual(candidate.vendor_id, candidate_data["vendor_id"])
+        self.assertEqual(candidate.mount_points, candidate_data["mount_points"])
+        self.assertEqual(candidate.serial_number, candidate_data["serial_number"])
+        self.assertEqual(candidate.serial_port, candidate_data["serial_port"])
+
+    def test_candidates_with_same_properties_are_equal(self):
+        candidate_data = build_candidate_data()
+        self.assertEqual(
+            Candidate(**candidate_data), Candidate(**candidate_data),
+        )
+
+    def test_raises_when_product_id_is_empty(self):
+        candidate_data = build_candidate_data(product_id="")
+        with self.assertRaisesRegex(ValueError, "product_id"):
+            Candidate(**candidate_data)
+
+    def test_raises_when_product_id_is_not_hex(self):
+        candidate_data = build_candidate_data(product_id="TEST")
+        with self.assertRaisesRegex(ValueError, "product_id"):
+            Candidate(**candidate_data)
+
+    def test_prefixes_product_id_hex_value(self):
+        candidate_data = build_candidate_data(product_id="ff01")
+        candidate = Candidate(**candidate_data)
+        self.assertEqual(candidate.product_id, "0xff01")
+
+    def test_raises_when_vendor_id_is_empty(self):
+        candidate_data = build_candidate_data(vendor_id="")
+        with self.assertRaisesRegex(ValueError, "vendor_id"):
+            Candidate(**candidate_data)
+
+    def test_raises_when_vendor_id_is_not_hex(self):
+        candidate_data = build_candidate_data(vendor_id="TEST")
+        with self.assertRaisesRegex(ValueError, "vendor_id"):
+            Candidate(**candidate_data)
+
+    def test_prefixes_vendor_id_hex_value(self):
+        candidate_data = build_candidate_data(vendor_id="cbad")
+        candidate = Candidate(**candidate_data)
+        self.assertEqual(candidate.vendor_id, "0xcbad")
+
+    def test_raises_when_mount_points_are_empty(self):
+        with self.assertRaisesRegex(ValueError, "mount_points"):
+            Candidate(product_id="1234", vendor_id="1234", mount_points=[], serial_number="1234")
+
+    def test_raises_when_serial_number_is_empty(self):
+        candidate_data = build_candidate_data(serial_number="")
+        with self.assertRaisesRegex(ValueError, "serial_number"):
+            Candidate(**candidate_data)
