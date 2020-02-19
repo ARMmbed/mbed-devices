@@ -12,6 +12,10 @@ def get_detector_for_current_os() -> DeviceDetector:
         from mbed_devices._internal.windows.device_detector import WindowsDeviceDetector
 
         return WindowsDeviceDetector()
+    if platform.system() == "Linux":
+        from mbed_devices._internal.linux.device_detector import LinuxDeviceDetector
+
+        return LinuxDeviceDetector()
     else:
         from mbed_devices._internal.darwin.device_detector import DarwinDeviceDetector
 

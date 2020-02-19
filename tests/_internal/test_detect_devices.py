@@ -1,6 +1,6 @@
 from unittest import TestCase
 from mbed_devices._internal.detect_devices import get_detector_for_current_os
-from tests.markers import windows_only, darwin_only
+from tests.markers import windows_only, darwin_only, linux_only
 
 
 class TestGetDetectorForCurrentOS(TestCase):
@@ -15,3 +15,9 @@ class TestGetDetectorForCurrentOS(TestCase):
         from mbed_devices._internal.darwin.device_detector import DarwinDeviceDetector
 
         self.assertIsInstance(get_detector_for_current_os(), DarwinDeviceDetector)
+
+    @linux_only
+    def test_linux_uses_correct_module(self):
+        from mbed_devices._internal.linux.device_detector import LinuxDeviceDetector
+
+        self.assertIsInstance(get_detector_for_current_os(), LinuxDeviceDetector)
