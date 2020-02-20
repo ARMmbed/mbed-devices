@@ -1,7 +1,7 @@
 """Interactions with `ioreg`."""
 import plistlib
 import subprocess
-from typing import List, Dict, Optional, Any
+from typing import Any, Dict, Iterable, List, Optional
 from xml.parsers.expat import ExpatError
 
 
@@ -24,7 +24,7 @@ def get_io_dialin_device(device_name: str) -> Optional[str]:
     return dialin_device
 
 
-def _find_first_property_value(property_name: str, data: List[Dict]) -> Any:
+def _find_first_property_value(property_name: str, data: Iterable[Dict]) -> Any:
     """Finds a first value of a given proprety name in data from `ioreg`, returns None if not found."""
     found_value = None
     for item in data:

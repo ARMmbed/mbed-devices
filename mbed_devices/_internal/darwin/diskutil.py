@@ -1,10 +1,21 @@
 """Interactions with `diskutil`."""
 import plistlib
 import subprocess
-from typing import Dict, List, Optional, cast
+from typing import Dict, Iterable, List, Optional, cast
+from typing_extensions import TypedDict
 
 
-def get_all_external_disks_data() -> List[Dict]:
+VolumeTree = Dict  # mypy does not work with recursive types, which nested "Partitions" would require
+
+
+class Volume(TypedDict, total=False):
+    """Representation of mounted volume."""
+
+    MountPoint: str  # example: /Volumes/SomeName
+    DeviceIdentifier: str  # example: disk2
+
+
+def get_all_external_disks_data() -> List[VolumeTree]:
     """Returns parsed output of `diskutil` call, fetching only information of interest."""
     output = subprocess.check_output(["diskutil", "list", "-plist", "external"], stderr=subprocess.DEVNULL)
     if output:
@@ -13,7 +24,7 @@ def get_all_external_disks_data() -> List[Dict]:
     return []
 
 
-def get_all_external_volumes_data() -> List[Dict]:
+def get_all_external_volumes_data() -> List[Volume]:
     """Returns all external volumes data.
 
     Reduces structure returned by `diskutil` call to one which will only contain data about Volumes.
@@ -23,7 +34,7 @@ def get_all_external_volumes_data() -> List[Dict]:
     return _filter_volumes(data)
 
 
-def get_external_volume_data(device_identifier: str) -> Optional[Dict]:
+def get_external_volume_data(device_identifier: str) -> Optional[Volume]:
     """Returns external volume data for a given identifier."""
     data = get_all_external_volumes_data()
     for device in data:
@@ -36,11 +47,11 @@ def get_mount_point(device_identifier: str) -> Optional[str]:
     """Returns mount point of a given device."""
     device_data = get_external_volume_data(device_identifier)
     if device_data and "MountPoint" in device_data:
-        return cast(str, device_data["MountPoint"])
+        return device_data["MountPoint"]
     return None
 
 
-def _filter_volumes(data: List[Dict]) -> List[Dict]:
+def _filter_volumes(data: Iterable[VolumeTree]) -> List[Volume]:
     """Flattens the structure returned by `diskutil` call.
 
     Expected input will contain both partitioned an unpartitioned devices.
@@ -52,5 +63,5 @@ def _filter_volumes(data: List[Dict]) -> List[Dict]:
         if "Partitions" in device:
             devices.extend(_filter_volumes(device["Partitions"]))
         else:
-            devices.append(device)
+            devices.append(cast(Volume, device))
     return devices

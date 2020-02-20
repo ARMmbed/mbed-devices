@@ -2,7 +2,8 @@
 import logging
 import pathlib
 import re
-from typing import List, Optional, Dict
+from typing import List, Optional
+from typing_extensions import TypedDict
 from mbed_devices._internal.base_detector import DeviceDetector
 from mbed_devices._internal.candidate import Candidate
 from mbed_devices._internal.darwin import system_profiler, ioreg, diskutil
@@ -10,6 +11,16 @@ from mbed_tools_lib.logging import log_exception
 
 
 logger = logging.getLogger(__name__)
+
+
+class CandidateData(TypedDict):
+    """CandidateData calculated from USBDevice."""
+
+    vendor_id: str
+    product_id: str
+    serial_number: str
+    mount_points: List[pathlib.Path]
+    serial_port: Optional[str]
 
 
 class InvalidCandidateDataError(ValueError):
@@ -37,7 +48,7 @@ class DarwinDeviceDetector(DeviceDetector):
         return candidates
 
 
-def _build_candidate(device_data: system_profiler.USBDeviceData) -> Candidate:
+def _build_candidate(device_data: system_profiler.USBDevice) -> Candidate:
     assembled_data = _assemble_candidate_data(device_data)
     try:
         return Candidate(**assembled_data)
@@ -46,7 +57,7 @@ def _build_candidate(device_data: system_profiler.USBDeviceData) -> Candidate:
         raise InvalidCandidateDataError
 
 
-def _assemble_candidate_data(device_data: system_profiler.USBDeviceData) -> Dict:
+def _assemble_candidate_data(device_data: system_profiler.USBDevice) -> CandidateData:
     return {
         "vendor_id": _format_vendor_id(device_data.get("vendor_id", "")),
         "product_id": device_data.get("product_id", ""),
@@ -65,7 +76,7 @@ def _format_vendor_id(vendor_id: str) -> str:
     return vendor_id.split(maxsplit=1)[0]
 
 
-def _get_mount_points(device_data: system_profiler.USBDeviceData) -> List[pathlib.Path]:
+def _get_mount_points(device_data: system_profiler.USBDevice) -> List[pathlib.Path]:
     """Returns mount points for a given device, empty list if device has no mount points."""
     storage_identifiers = [media["bsd_name"] for media in device_data.get("Media", []) if "bsd_name" in media]
     mount_points = []
@@ -78,7 +89,7 @@ def _get_mount_points(device_data: system_profiler.USBDeviceData) -> List[pathli
     return mount_points
 
 
-def _get_serial_port(device_data: system_profiler.USBDeviceData) -> Optional[str]:
+def _get_serial_port(device_data: system_profiler.USBDevice) -> Optional[str]:
     """Returns serial port for a given device, None if serial port cannot be determined."""
     device_name = device_data.get("_name")
     if not device_name:
