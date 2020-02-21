@@ -1,16 +1,14 @@
 """Device model definition."""
-from typing import NamedTuple
+from typing import NamedTuple, List
+import pathlib
 
 from mbed_targets import MbedTarget
-from mbed_devices.interface_firmware import InterfaceFirmware
 
 
 class Device(NamedTuple):
     """Definition of an Mbed Device."""
 
-    mount_point: str
-    identifier: str
-    interface_firmware: InterfaceFirmware
-    interface_firmware_version: str
     mbed_target: MbedTarget
+    serial_number: str
     serial_port: str
+    mount_points: List[pathlib.Path]
