@@ -1,11 +1,11 @@
 import pathlib
 from unittest import TestCase, mock
 
-from mbed_devices._internal.candidate import Candidate
+from mbed_devices._internal.candidate_device import CandidateDevice
 from mbed_devices._internal.darwin import system_profiler, diskutil, ioreg
 from mbed_devices._internal.darwin.device_detector import (
     DarwinDeviceDetector,
-    InvalidCandidateDataError,
+    InvalidCandidateDeviceDataError,
     _assemble_candidate_data,
     _build_candidate,
     _build_ioreg_device_name,
@@ -20,7 +20,7 @@ class TestDarwinDeviceDetector(TestCase):
     def test_find_candidates_successful_build_yields_candidate(self, system_profiler, _build_candidate):
         device_data = {"some": "data"}
         system_profiler.get_end_usb_devices_data.return_value = [device_data]
-        candidate = Candidate(
+        candidate = CandidateDevice(
             vendor_id="0x1234",
             product_id="0xff",
             serial_port="COM1",
@@ -34,13 +34,13 @@ class TestDarwinDeviceDetector(TestCase):
     def test_find_candidates_does_not_yield_failed_candidate_builds(self, system_profiler, _build_candidate):
         device_data = {"other": "data"}
         system_profiler.get_end_usb_devices_data.return_value = [device_data]
-        _build_candidate.side_effect = InvalidCandidateDataError
+        _build_candidate.side_effect = InvalidCandidateDeviceDataError
         self.assertEqual(DarwinDeviceDetector().find_candidates(), [])
         _build_candidate.assert_called_with(device_data)
 
 
 @mock.patch("mbed_devices._internal.darwin.device_detector._assemble_candidate_data")
-class TestBuildCandidate(TestCase):
+class TestBuildCandidateDevice(TestCase):
     def test_builds_candidate_using_assembled_data(self, _assemble_candidate_data):
         device_data = {
             "vendor_id": "0xff",
@@ -52,19 +52,19 @@ class TestBuildCandidate(TestCase):
         _assemble_candidate_data.return_value = device_data
 
         self.assertEqual(
-            _build_candidate(device_data), Candidate(**device_data),
+            _build_candidate(device_data), CandidateDevice(**device_data),
         )
 
-    @mock.patch("mbed_devices._internal.darwin.device_detector.Candidate")
-    def test_raises_if_candidate_cannot_be_built(self, Candidate, _assemble_candidate_data):
-        Candidate.side_effect = ValueError
-        with self.assertRaises(InvalidCandidateDataError):
+    @mock.patch("mbed_devices._internal.darwin.device_detector.CandidateDevice")
+    def test_raises_if_candidate_cannot_be_built(self, CandidateDevice, _assemble_candidate_data):
+        CandidateDevice.side_effect = ValueError
+        with self.assertRaises(InvalidCandidateDeviceDataError):
             _build_candidate({})
 
 
 @mock.patch("mbed_devices._internal.darwin.device_detector._get_serial_port")
 @mock.patch("mbed_devices._internal.darwin.device_detector._get_mount_points")
-class TestAssembleCandidateData(TestCase):
+class TestAssembleCandidateDeviceData(TestCase):
     def test_glues_device_data_from_various_sources(self, _get_mount_points, _get_serial_port):
         device_data = {
             "vendor_id": "0xff",

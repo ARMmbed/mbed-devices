@@ -1,4 +1,4 @@
-"""Defines Candidate model used for device detection."""
+"""Defines CandidateDevice model used for device detection."""
 from typing import Optional, List
 from pathlib import Path
 
@@ -11,7 +11,7 @@ def _format_hex(hex_value: str) -> str:
     return hex(int(hex_value, 16))
 
 
-class Candidate:
+class CandidateDevice:
     """Valid candidate device connected to the host computer.
 
     We know for a fact that a valid candidate contains certain non-empty fields.
@@ -25,7 +25,7 @@ class Candidate:
         serial_number: str,
         serial_port: Optional[str] = None,
     ) -> None:
-        """Validate given values and return a Candidate."""
+        """Validate given values and return a CandidateDevice."""
         try:
             self.product_id = _format_hex(product_id)
         except ValueError:
@@ -48,11 +48,11 @@ class Candidate:
 
     def __eq__(self, other: object) -> bool:
         """Allows comparing two candidates by the value of their attributes."""
-        if not isinstance(other, Candidate):
+        if not isinstance(other, CandidateDevice):
             return NotImplemented
         return self.__dict__ == other.__dict__
 
     def __repr__(self) -> str:
         """Namedtuple-like representation of the instance."""
         values = [f"{k}={v!r}" for (k, v) in self.__dict__.items()]
-        return f"Candidate({', '.join(values)})"
+        return f"CandidateDevice({', '.join(values)})"

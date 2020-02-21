@@ -2,7 +2,7 @@
 import platform
 from typing import List
 
-from mbed_devices._internal.candidate import Candidate
+from mbed_devices._internal.candidate_device import CandidateDevice
 from mbed_devices._internal.base_detector import DeviceDetector
 
 
@@ -22,10 +22,10 @@ def get_detector_for_current_os() -> DeviceDetector:
         return DarwinDeviceDetector()
 
 
-def detect_devices() -> List[Candidate]:
+def detect_devices() -> List[CandidateDevice]:
     """Returns Devices connected to host computer."""
     # TODO:
-    # - map Candidates to Devices
+    # - map CandidateDevices to Devices
     detector = get_detector_for_current_os()
     candidates = detector.find_candidates()
     return candidates

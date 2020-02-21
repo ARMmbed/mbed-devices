@@ -5,7 +5,7 @@ import re
 from typing import List, Optional
 from typing_extensions import TypedDict
 from mbed_devices._internal.base_detector import DeviceDetector
-from mbed_devices._internal.candidate import Candidate
+from mbed_devices._internal.candidate_device import CandidateDevice
 from mbed_devices._internal.darwin import system_profiler, ioreg, diskutil
 from mbed_tools_lib.logging import log_exception
 
@@ -13,8 +13,8 @@ from mbed_tools_lib.logging import log_exception
 logger = logging.getLogger(__name__)
 
 
-class CandidateData(TypedDict):
-    """CandidateData calculated from USBDevice."""
+class CandidateDeviceData(TypedDict):
+    """CandidateDeviceData calculated from USBDevice."""
 
     vendor_id: str
     product_id: str
@@ -23,8 +23,8 @@ class CandidateData(TypedDict):
     serial_port: Optional[str]
 
 
-class InvalidCandidateDataError(ValueError):
-    """Raised when Candidate was given invalid data and it cannot be built."""
+class InvalidCandidateDeviceDataError(ValueError):
+    """Raised when CandidateDevice was given invalid data and it cannot be built."""
 
     pass
 
@@ -32,15 +32,15 @@ class InvalidCandidateDataError(ValueError):
 class DarwinDeviceDetector(DeviceDetector):
     """Darwin specific implementation of device detection."""
 
-    def find_candidates(self) -> List[Candidate]:
-        """Return a list of Candidates."""
+    def find_candidates(self) -> List[CandidateDevice]:
+        """Return a list of CandidateDevices."""
         usb_devices_data = system_profiler.get_end_usb_devices_data()
         candidates = []
         for device_data in usb_devices_data:
             logging.debug(f"Building from: {device_data}.")
             try:
                 candidate = _build_candidate(device_data)
-            except InvalidCandidateDataError:
+            except InvalidCandidateDeviceDataError:
                 pass
             else:
                 logging.debug(f"Built candidate: {candidate}.")
@@ -48,16 +48,16 @@ class DarwinDeviceDetector(DeviceDetector):
         return candidates
 
 
-def _build_candidate(device_data: system_profiler.USBDevice) -> Candidate:
+def _build_candidate(device_data: system_profiler.USBDevice) -> CandidateDevice:
     assembled_data = _assemble_candidate_data(device_data)
     try:
-        return Candidate(**assembled_data)
+        return CandidateDevice(**assembled_data)
     except ValueError as e:
         log_exception(logger, e)
-        raise InvalidCandidateDataError
+        raise InvalidCandidateDeviceDataError
 
 
-def _assemble_candidate_data(device_data: system_profiler.USBDevice) -> CandidateData:
+def _assemble_candidate_data(device_data: system_profiler.USBDevice) -> CandidateDeviceData:
     return {
         "vendor_id": _format_vendor_id(device_data.get("vendor_id", "")),
         "product_id": device_data.get("product_id", ""),
