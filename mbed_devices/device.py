@@ -1,7 +1,6 @@
 """Device model definition."""
-from typing import NamedTuple, List
 import pathlib
-
+from typing import NamedTuple, List
 from mbed_targets import MbedTarget
 
 
