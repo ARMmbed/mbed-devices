@@ -7,7 +7,6 @@ from typing_extensions import TypedDict
 from mbed_devices._internal.base_detector import DeviceDetector
 from mbed_devices._internal.candidate_device import CandidateDevice
 from mbed_devices._internal.darwin import system_profiler, ioreg, diskutil
-from mbed_tools_lib.logging import log_exception
 
 
 logger = logging.getLogger(__name__)
@@ -53,7 +52,7 @@ def _build_candidate(device_data: system_profiler.USBDevice) -> CandidateDevice:
     try:
         return CandidateDevice(**assembled_data)
     except ValueError as e:
-        log_exception(logger, e)
+        logging.debug(f"Unable to build candidate. {e}")
         raise InvalidCandidateDeviceDataError
 
 
