@@ -3,14 +3,6 @@ from typing import Optional, List
 from pathlib import Path
 
 
-def _format_hex(hex_value: str) -> str:
-    """Return hex value with a prefix.
-
-    Accepts hex_value in prefixed (0xff) and unprefixed (ff) formats.
-    """
-    return hex(int(hex_value, 16))
-
-
 class CandidateDevice:
     """Valid candidate device connected to the host computer.
 
@@ -56,3 +48,11 @@ class CandidateDevice:
         """Namedtuple-like representation of the instance."""
         values = [f"{k}={v!r}" for (k, v) in self.__dict__.items()]
         return f"CandidateDevice({', '.join(values)})"
+
+
+def _format_hex(hex_value: str) -> str:
+    """Return hex value with a prefix.
+
+    Accepts hex_value in prefixed (0xff) and unprefixed (ff) formats.
+    """
+    return hex(int(hex_value, 16))
