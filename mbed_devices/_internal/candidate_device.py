@@ -3,6 +3,18 @@ from typing import Optional, List
 from pathlib import Path
 
 
+class CandidateDeviceError(ValueError):
+    """Base exception raised by a CandidateDevice."""
+
+
+class USBDescriptorError(CandidateDeviceError):
+    """USB descriptor field was not found."""
+
+
+class FilesystemMountpointError(CandidateDeviceError):
+    """Filesystem mount point was not found."""
+
+
 class CandidateDevice:
     """Valid candidate device connected to the host computer.
 
@@ -21,20 +33,20 @@ class CandidateDevice:
         try:
             self.product_id = _format_hex(product_id)
         except ValueError:
-            raise ValueError('Given "product_id" must be a non-empty hex value.')
+            raise USBDescriptorError('Given "product_id" must be a non-empty hex value.')
 
         try:
             self.vendor_id = _format_hex(vendor_id)
         except ValueError:
-            raise ValueError('Given "vendor_id" must be a non-empty hex value.')
-
-        if not mount_points:
-            raise ValueError('Given "mount_points" must be non-empty.')
-        self.mount_points = mount_points
+            raise USBDescriptorError('Given "vendor_id" must be a non-empty hex value.')
 
         if not serial_number:
-            raise ValueError('Given "serial_number" must be non-empty.')
+            raise USBDescriptorError('Given "serial_number" must be non-empty.')
         self.serial_number = serial_number
+
+        if not mount_points:
+            raise FilesystemMountpointError('Given "mount_points" must be non-empty.')
+        self.mount_points = mount_points
 
         self.serial_port = serial_port
 
