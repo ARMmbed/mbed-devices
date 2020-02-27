@@ -1,13 +1,41 @@
 """Defines a device detector for Windows."""
+from pathlib import Path
 from typing import List
 
 from mbed_devices._internal.base_detector import DeviceDetector
 from mbed_devices._internal.candidate_device import CandidateDevice
+from mbed_devices._internal.windows.usb_data_aggregation import SystemUsbData, AggregatedUsbData
 
 
 class WindowsDeviceDetector(DeviceDetector):
     """Windows specific implementation of device detection."""
 
     def find_candidates(self) -> List[CandidateDevice]:
-        """Return a generator of CandidateDevices."""
-        pass
+        """Return a generator of Candidates."""
+        return [
+            WindowsDeviceDetector.map_to_candidate(usb)
+            for usb in SystemUsbData().all()
+            if WindowsDeviceDetector.is_valid_candidate(usb)
+        ]
+
+    @staticmethod
+    def map_to_candidate(usb_data: AggregatedUsbData) -> CandidateDevice:
+        """Maps a USB device to a candidate."""
+        serial_port = next(iter(usb_data.get("serial_port")), None)
+        uid = usb_data.get("usb_identifier")
+        return CandidateDevice(
+            product_id=uid.product_id,
+            vendor_id=uid.vendor_id,
+            mount_points=[Path(disk.component_id) for disk in usb_data.get("disks")],
+            serial_number=uid.raw_uid,
+            serial_port=serial_port.port_name if serial_port else None,
+        )
+
+    @staticmethod
+    def is_valid_candidate(usb_data: AggregatedUsbData) -> bool:
+        """States whether the usb device is a valid candidate or not."""
+        return len(usb_data.get("related_usb_interfaces")) > 0 and len(usb_data.get("disks")) > 0
+
+
+for c in WindowsDeviceDetector().find_candidates():
+    print(c)

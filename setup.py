@@ -39,6 +39,7 @@ setup(
         "Click==7.0",
         "mbed-targets",
         "mbed-tools-lib",
+        "pywin32; platform_system=='Windows'",
         "psutil; platform_system=='Linux'",
         "pyudev; platform_system=='Linux'",
         "typing-extensions",

@@ -1,0 +1,1 @@
+Add Windows adapter for listing devices
