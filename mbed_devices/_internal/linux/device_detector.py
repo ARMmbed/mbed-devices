@@ -1,4 +1,4 @@
-"""Defines a device detector for Windows."""
+"""Defines a device detector for Linux."""
 import logging
 from pathlib import Path
 from typing import List, Optional, cast
