@@ -1,6 +1,7 @@
 import pathlib
 from unittest import TestCase, mock
 
+from tests.factories import CandidateDeviceFactory
 from mbed_devices._internal.candidate_device import CandidateDevice
 from mbed_devices._internal.darwin import system_profiler, diskutil, ioreg
 from mbed_devices._internal.darwin.device_detector import (
@@ -20,13 +21,7 @@ class TestDarwinDeviceDetector(TestCase):
     def test_find_candidates_successful_build_yields_candidate(self, system_profiler, _build_candidate):
         device_data = {"some": "data"}
         system_profiler.get_end_usb_devices_data.return_value = [device_data]
-        candidate = CandidateDevice(
-            vendor_id="0x1234",
-            product_id="0xff",
-            serial_port="COM1",
-            serial_number="1234",
-            mount_points=[pathlib.Path("/some/path")],
-        )
+        candidate = CandidateDeviceFactory()
         _build_candidate.return_value = candidate
         self.assertEqual(DarwinDeviceDetector().find_candidates(), [candidate])
         _build_candidate.assert_called_with(device_data)
