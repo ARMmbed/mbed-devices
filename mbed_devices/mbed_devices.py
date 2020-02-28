@@ -1,5 +1,5 @@
 """API for listing devices."""
-from typing import Iterable
+from typing import Iterable, Optional
 from mbed_targets import MbedTarget
 
 from mbed_devices.device import Device
@@ -21,5 +21,5 @@ def _build_device(candidate: CandidateDevice) -> Device:
     )
 
 
-def _get_mbed_target_for_candidate(candidate: CandidateDevice) -> MbedTarget:
-    return MbedTarget({})
+def _get_mbed_target_for_candidate(candidate: CandidateDevice) -> Optional[MbedTarget]:
+    return None

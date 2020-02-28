@@ -11,7 +11,14 @@ def _build_output(devices: Iterable[Device]) -> str:
     devices_data = []
     for device in devices:
         mount_points = ", ".join(str(mount_point) for mount_point in device.mount_points)
-        devices_data.append([device.mbed_target.platform_name, device.serial_number, device.serial_port, mount_points])
+        devices_data.append(
+            [
+                device.mbed_target.platform_name if device.mbed_target else "UNKNOWN",
+                device.serial_number,
+                device.serial_port or "UNKNOWN",
+                mount_points,
+            ]
+        )
     return tabulate(devices_data, headers=headers)
 
 

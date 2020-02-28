@@ -38,3 +38,27 @@ class TestListConnectedDevices(TestCase):
         self.assertIn(device.serial_number, result.output)
         self.assertIn(device.serial_port, result.output)
         self.assertIn(", ".join(str(m) for m in device.mount_points), result.output)
+
+    def test_handles_unknown_mbed_target(self, get_connected_devices):
+        device = Device(
+            mbed_target=None, serial_number="serial", serial_port="COM1", mount_points=[pathlib.Path("somepath")],
+        )
+        get_connected_devices.return_value = [device]
+
+        result = CliRunner().invoke(list_connected_devices)
+
+        self.assertEqual(result.exit_code, 0)
+        self.assertIn("UNKNOWN", result.output)
+
+    def test_handles_unknown_serial_port(self, get_connected_devices):
+        device = Device(
+            mbed_target=mock.Mock(spec_set=MbedTarget, platform_name="Bar"),
+            serial_number="serial",
+            serial_port=None,
+            mount_points=[pathlib.Path("somepath")],
+        )
+        get_connected_devices.return_value = [device]
+
+        result = CliRunner().invoke(list_connected_devices)
+
+        self.assertIn("UNKNOWN", result.output)
