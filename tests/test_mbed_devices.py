@@ -1,11 +1,14 @@
 from unittest import TestCase, mock
+from mbed_tools_lib.exceptions import ToolsError
 
 from tests.factories import CandidateDeviceFactory
 from mbed_devices.device import Device
 from mbed_devices.mbed_devices import (
     _build_device,
+    _get_mbed_target_for_candidate,
     get_connected_devices,
 )
+from mbed_devices._internal.product_code import MissingProductCode
 
 
 class TestGetConnectedDevices(TestCase):
@@ -32,3 +35,28 @@ class TestBuildDevice(TestCase):
             ),
         )
         _get_mbed_target_for_candidate.assert_called_once_with(candidate)
+
+
+class TestGetMbedTargetForCandidate(TestCase):
+    @mock.patch("mbed_devices.mbed_devices.get_target")
+    @mock.patch("mbed_devices.mbed_devices.extract_product_code")
+    def test_uses_product_code_to_fetch_target(self, extract_product_code, get_target):
+        candidate = CandidateDeviceFactory()
+        self.assertEqual(_get_mbed_target_for_candidate(candidate), get_target.return_value)
+        extract_product_code.assert_called_once_with(candidate)
+        get_target.assert_called_once_with(extract_product_code.return_value)
+
+    @mock.patch("mbed_devices.mbed_devices.get_target")
+    @mock.patch("mbed_devices.mbed_devices.extract_product_code")
+    def test_returns_none_when_product_code_cannot_be_extracted(self, extract_product_code, get_target):
+        candidate = CandidateDeviceFactory()
+        extract_product_code.side_effect = MissingProductCode
+        self.assertIsNone(_get_mbed_target_for_candidate(candidate))
+        get_target.assert_not_called()
+
+    @mock.patch("mbed_devices.mbed_devices.get_target")
+    @mock.patch("mbed_devices.mbed_devices.extract_product_code")
+    def test_returns_none_when_target_not_found(self, extract_product_code, get_target):
+        candidate = CandidateDeviceFactory()
+        get_target.side_effect = ToolsError
+        self.assertIsNone(_get_mbed_target_for_candidate(candidate))
