@@ -7,7 +7,7 @@
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/mbed-devices)](https://pypi.org/project/mbed-devices/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/ARMmbed/mbed-devices/blob/master/LICENSE)
 
-[![Build Status](https://dev.azure.com/mbed-tools/mbed-devices/_apis/build/status/Build%20and%20Release?branchName=master)](https://dev.azure.com/mbed-tools/mbed-devices/_build/latest?definitionId=11&branchName=master)
+[![Build Status](https://dev.azure.com/mbed-tools/mbed-devices/_apis/build/status/Build%20and%20Release?branchName=master&stageName=CI%20Checkpoint)](https://dev.azure.com/mbed-tools/mbed-devices/_build/latest?definitionId=11&branchName=master)
 [![Test Coverage](https://codecov.io/gh/ARMmbed/mbed-devices/branch/master/graph/badge.svg)](https://codecov.io/gh/ARMmbed/mbed-devices)
 [![Maintainability](https://api.codeclimate.com/v1/badges/08971231f91470bf6d77/maintainability)](https://codeclimate.com/github/ARMmbed/mbed-devices/maintainability)
 
