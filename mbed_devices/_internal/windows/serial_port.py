@@ -15,7 +15,7 @@ from mbed_devices._internal.windows.component_descriptor import (
     UNKNOWN_VALUE,
     ComponentDescriptorWrapper,
 )
-from mbed_devices._internal.windows.usb_device_descriptor import UsbIdentifier, parse_device_id
+from mbed_devices._internal.windows.usb_device_identifier import UsbIdentifier, parse_device_id
 
 CAPTION_PATTERN = re.compile(f"^.* [(](.*)[)]$")
 

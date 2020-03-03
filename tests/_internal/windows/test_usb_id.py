@@ -10,7 +10,7 @@ class TestDeviceIdParsing(TestCase):
     """Tests based on https://docs.microsoft.com/en-us/windows-hardware/drivers/install/standard-usb-identifiers."""
 
     def test_single_interface_usb_device(self):
-        from mbed_devices._internal.windows.usb_device_descriptor import parse_device_id
+        from mbed_devices._internal.windows.usb_device_identifier import parse_device_id
 
         self.assertTrue(parse_device_id("").is_undefined)
         self.assertTrue(parse_device_id(None).is_undefined)
@@ -31,7 +31,7 @@ class TestDeviceIdParsing(TestCase):
         )
 
     def test_multiple_interface_usb_device(self):
-        from mbed_devices._internal.windows.usb_device_descriptor import parse_device_id
+        from mbed_devices._internal.windows.usb_device_identifier import parse_device_id
 
         self.assertEqual(
             parse_device_id("USB\\VID_0D28&PID_0204&MI_00\\0240000034544E45001A00018AA900292011000097969900").UID,
@@ -54,7 +54,7 @@ class TestDeviceIdParsing(TestCase):
         )
 
     def test_equals(self):
-        from mbed_devices._internal.windows.usb_device_descriptor import UsbIdentifier, KEY_UID
+        from mbed_devices._internal.windows.usb_device_identifier import UsbIdentifier, KEY_UID
 
         a = UsbIdentifier()
         b = UsbIdentifier()
@@ -78,7 +78,7 @@ class TestDeviceIdParsing(TestCase):
         self.assertEqual(b, a)
 
     def test_hashing(self):
-        from mbed_devices._internal.windows.usb_device_descriptor import UsbIdentifier, KEY_UID
+        from mbed_devices._internal.windows.usb_device_identifier import UsbIdentifier, KEY_UID
 
         a = UsbIdentifier()
         b = UsbIdentifier()

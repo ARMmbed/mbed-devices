@@ -1,4 +1,4 @@
-"""Defines a USB Device ID descriptor."""
+"""Defines a USB Identifier."""
 
 import re
 from enum import Enum
@@ -44,17 +44,17 @@ class UsbIdentifier(
 
     def get(self, key: USBIdentifierToken) -> str:
         """Returns the value corresponding to a specific token."""
-        return str(self.__getattribute__(key.name))
+        return str(getattr(self, key.name))
 
     @property
     def uid(self) -> str:
         """Gets the USB ID."""
-        return str(self.__getattribute__(KEY_UID))
+        return str(getattr(self, KEY_UID))
 
     @property
     def raw_uid(self) -> str:
         """Gets the USB id (raw form as it can be a combination of other elements e.g. 8&3432E179&0&000)."""
-        return str(self.__getattribute__(KEY_RAW_UID))
+        return str(getattr(self, KEY_RAW_UID))
 
     @property
     def product_id(self) -> str:

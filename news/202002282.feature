@@ -1,0 +1,1 @@
+Created a new Windows component identifier to handle the use of either InstanceIDs or SerialNumbers by the system for related components

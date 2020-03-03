@@ -5,7 +5,7 @@ from mbed_devices._internal.windows.component_descriptor import ComponentDescrip
 from mbed_devices._internal.windows.component_descriptor_utils import retain_value_or_default
 from mbed_devices._internal.windows.disk_aggregation import SystemDiskInformation, AggregatedDiskData
 from mbed_devices._internal.windows.serial_port import SerialPort, SystemSerialPortInformation
-from mbed_devices._internal.windows.usb_device_descriptor import UsbIdentifier
+from mbed_devices._internal.windows.usb_device_identifier import UsbIdentifier
 from mbed_devices._internal.windows.usb_hub import UsbHub, SystemUsbDeviceInformation
 
 

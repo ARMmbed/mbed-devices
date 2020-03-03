@@ -3,7 +3,7 @@
 from typing import NamedTuple, Dict, List, cast, Optional
 
 from mbed_devices._internal.windows.component_descriptor import ComponentDescriptor, ComponentDescriptorWrapper
-from mbed_devices._internal.windows.usb_device_descriptor import parse_device_id, UsbIdentifier
+from mbed_devices._internal.windows.usb_device_identifier import parse_device_id, UsbIdentifier
 from mbed_devices._internal.windows.usb_controller import UsbController
 
 
