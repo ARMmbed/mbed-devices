@@ -22,20 +22,16 @@ class WindowsDeviceDetector(DeviceDetector):
     def map_to_candidate(usb_data: AggregatedUsbData) -> CandidateDevice:
         """Maps a USB device to a candidate."""
         serial_port = next(iter(usb_data.get("serial_port")), None)
-        uid = usb_data.get("usb_identifier")
+        uid = usb_data.uid
         return CandidateDevice(
             product_id=uid.product_id,
             vendor_id=uid.vendor_id,
             mount_points=[Path(disk.component_id) for disk in usb_data.get("disks")],
-            serial_number=uid.raw_uid,
+            serial_number=uid.uid.presumed_serial_number,
             serial_port=serial_port.port_name if serial_port else None,
         )
 
     @staticmethod
     def is_valid_candidate(usb_data: AggregatedUsbData) -> bool:
         """States whether the usb device is a valid candidate or not."""
-        return len(usb_data.get("related_usb_interfaces")) > 0 and len(usb_data.get("disks")) > 0
-
-
-for c in WindowsDeviceDetector().find_candidates():
-    print(c)
+        return usb_data.is_composite and usb_data.is_associated_with_disk

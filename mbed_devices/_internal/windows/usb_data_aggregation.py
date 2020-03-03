@@ -29,13 +29,23 @@ class AggregatedUsbData(ComponentDescriptor):
 
     @property
     def component_id(self) -> str:
-        """Returns the device id field."""
-        return cast(str, self.get("usb_identifier").raw_uid)
+        """Returns an id."""
+        return str(self.uid)
+
+    @property
+    def uid(self) -> UsbIdentifier:
+        """Returns the USB identifier."""
+        return cast(UsbIdentifier, self.get("usb_identifier"))
 
     @property
     def is_associated_with_disk(self) -> bool:
         """States whether the usb device is associated with a disk."""
         return len(self.get("disks")) > 0
+
+    @property
+    def is_composite(self) -> bool:
+        """States whether the usb device is associated with multiple interfaces."""
+        return len(self.get("related_usb_interfaces")) > 1
 
 
 class UsbDataAggregator:
@@ -54,7 +64,7 @@ class UsbDataAggregator:
 
     def aggregate(self, usb_id: UsbIdentifier) -> AggregatedUsbData:
         """Aggregates data about a USB device from different sources."""
-        disk_data = self._disk_data.get_disk_information(retain_value_or_default(usb_id.uid))
+        disk_data = self._disk_data.get_disk_information(retain_value_or_default(usb_id.uid.uid))
         serial_data = self._serial_data.get_serial_port_information(usb_id)
         usb_data = self._usb_devices.get_usb_devices(usb_id)
         aggregated_data = AggregatedUsbData()
