@@ -1,7 +1,7 @@
 from unittest import TestCase
 from pyfakefs.fake_filesystem_unittest import Patcher
 
-from mbed_devices._internal.htm_file import HTMFileContentsParser
+from mbed_devices._internal.htm_file import HTMFileContentsParser, OnlineId
 
 
 class TestCode(TestCase):
@@ -25,6 +25,22 @@ class TestCode(TestCase):
     def test_none_if_no_code(self):
         parser = HTMFileContentsParser("")
         self.assertIsNone(parser.code)
+
+
+class TestOnlineId(TestCase):
+    def test_reads_online_id_from_url(self):
+        url = "https://os.mbed.com/platforms/THIS-IS_a_SLUG_123/"
+        file_contents = f"window.location.replace({url});"
+
+        parser = HTMFileContentsParser(file_contents)
+        self.assertEqual(parser.online_id, OnlineId(device_type="platform", device_slug="THIS-IS_a_SLUG_123"))
+
+    def test_none_if_not_found(self):
+        url = "https://os.mbed.com/about"
+        file_contents = f"window.location.replace({url});"
+
+        parser = HTMFileContentsParser(file_contents)
+        self.assertIsNone(parser.online_id)
 
 
 class TestFromFile(TestCase):

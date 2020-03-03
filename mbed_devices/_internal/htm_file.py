@@ -40,10 +40,37 @@ Its main goal is to provide a taste of different flavours of HTM files we need t
     </head>
     <body></body>
     </html>
+
+---
+
+    <!doctype html>
+    <!-- mbed Platform Website and Authentication Shortcut -->
+    <html>
+    <head>
+    <meta charset="utf-8">
+    <title>mbed Website Shortcut</title>
+    </head>
+    <body>
+    <script>
+    window.location.replace("https://os.mbed.com/platforms/LPCXpresso54114/");
+    </script>
+    </body>
+    </html>
+
 """
 import pathlib
 import re
-from typing import Type, TypeVar, Optional
+from typing import Type, TypeVar, Optional, NamedTuple
+
+
+class OnlineId(NamedTuple):
+    """Used to identify the target against the os.mbed.com website.
+
+    OnlineId(device_type="platform", slug="SOME-SLUG") -> https://os.mbed.com/platforms/SOME-SLUG
+    """
+
+    device_type: str
+    device_slug: str
 
 
 T = TypeVar("T", bound="HTMFileContentsParser")
@@ -71,4 +98,17 @@ class HTMFileContentsParser:
         match = re.search(regex, self._file_contents, re.VERBOSE)
         if match:
             return match["code"]
+        return None
+
+    @property
+    def online_id(self) -> Optional[OnlineId]:
+        """Returns online id parsed from the files contents, None if not found."""
+        regex = r"""
+            (?P<device_type>module|platform)s  # module|platform
+            \/                                 # forward slash in the url
+            (?P<device_slug>[-\w]+)            # permitted characters in a slug are letters and digits
+        """
+        match = re.search(regex, self._file_contents, re.VERBOSE)
+        if match:
+            return OnlineId(device_type=match["device_type"], device_slug=match["device_slug"])
         return None
