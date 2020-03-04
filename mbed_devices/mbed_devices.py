@@ -1,6 +1,6 @@
 """API for listing devices."""
 from typing import Iterable, Optional
-from mbed_targets import MbedTarget, get_target
+from mbed_targets import MbedTarget, get_target_by_product_code
 from mbed_tools_lib.exceptions import ToolsError
 
 from mbed_devices.device import Device
@@ -30,6 +30,6 @@ def _get_mbed_target_for_candidate(candidate: CandidateDevice) -> Optional[MbedT
         return None
 
     try:
-        return get_target(product_code)
+        return get_target_by_product_code(product_code)
     except ToolsError:
         return None
