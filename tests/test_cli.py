@@ -52,7 +52,12 @@ class TestListConnectedDevices(TestCase):
 class TestBuildTableOutput(TestCase):
     def test_returns_tabularised_representation_of_devices(self):
         device = Device(
-            mbed_target=mock.Mock(spec_set=MbedTarget, platform_name="Foo"),
+            mbed_target=mock.Mock(
+                spec_set=MbedTarget,
+                board_name="Foo",
+                build_variant=("S", "NS"),
+                board_type="I'm a consistent target db field",
+            ),
             serial_number="nice serial",
             serial_port="I'm a serial port",
             mount_points=[pathlib.Path("/Volumes/FOO"), pathlib.Path("/Volumes/BAR")],
@@ -60,10 +65,12 @@ class TestBuildTableOutput(TestCase):
 
         output = _build_tabular_output([device])
 
-        self.assertIn(device.mbed_target.platform_name, output)
+        self.assertIn(device.mbed_target.board_name, output)
         self.assertIn(device.serial_number, output)
         self.assertIn(device.serial_port, output)
         self.assertIn(", ".join(str(m) for m in device.mount_points), output)
+        self.assertIn(f"{device.mbed_target.board_type}_{device.mbed_target.build_variant[0]}", output)
+        self.assertIn(f"{device.mbed_target.board_type}_{device.mbed_target.build_variant[1]}", output)
 
     def test_handles_unknown_mbed_target(self):
         device = Device(
@@ -76,7 +83,7 @@ class TestBuildTableOutput(TestCase):
 
     def test_handles_unknown_serial_port(self):
         device = Device(
-            mbed_target=mock.Mock(spec_set=MbedTarget, platform_name="Bar"),
+            mbed_target=mock.Mock(spec_set=MbedTarget, board_name="Bar", board_type="FooBar", build_variant=()),
             serial_number="serial",
             serial_port=None,
             mount_points=[pathlib.Path("somepath")],
@@ -93,9 +100,10 @@ class TestBuildJsonOutput(TestCase):
             spec_set=MbedTarget,
             product_code="0021",
             board_type="HAT-BOAT",
-            platform_name="HAT Boat",
+            board_name="HAT Boat",
             mbed_os_support=["0.2"],
             mbed_enabled=["potentially"],
+            build_variant=("S", "NS"),
         )
         device = Device(
             mbed_target=mbed_target,
@@ -105,6 +113,7 @@ class TestBuildJsonOutput(TestCase):
         )
 
         output = _build_json_output([device])
+        build_targets = [f"{mbed_target.board_type}_{v}" for v in mbed_target.build_variant] + [mbed_target.board_type]
         expected_output = json.dumps(
             [
                 {
@@ -114,9 +123,10 @@ class TestBuildJsonOutput(TestCase):
                     "mbed_target": {
                         "product_code": mbed_target.product_code,
                         "board_type": mbed_target.board_type,
-                        "platform_name": mbed_target.platform_name,
+                        "board_name": mbed_target.board_name,
                         "mbed_os_support": mbed_target.mbed_os_support,
                         "mbed_enabled": mbed_target.mbed_enabled,
+                        "build_targets": build_targets,
                     },
                 }
             ],
