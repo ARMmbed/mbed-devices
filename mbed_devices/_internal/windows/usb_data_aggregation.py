@@ -2,7 +2,6 @@
 from typing import NamedTuple, List, cast
 
 from mbed_devices._internal.windows.component_descriptor import ComponentDescriptor
-from mbed_devices._internal.windows.component_descriptor_utils import retain_value_or_default
 from mbed_devices._internal.windows.disk_aggregation import SystemDiskInformation, AggregatedDiskData
 from mbed_devices._internal.windows.serial_port import SerialPort, SystemSerialPortInformation
 from mbed_devices._internal.windows.usb_device_identifier import UsbIdentifier
@@ -64,7 +63,7 @@ class UsbDataAggregator:
 
     def aggregate(self, usb_id: UsbIdentifier) -> AggregatedUsbData:
         """Aggregates data about a USB device from different sources."""
-        disk_data = self._disk_data.get_disk_information(retain_value_or_default(usb_id.uid.uid))
+        disk_data = self._disk_data.get_disk_information(usb_id.uid)
         serial_data = self._serial_data.get_serial_port_information(usb_id)
         usb_data = self._usb_devices.get_usb_devices(usb_id)
         aggregated_data = AggregatedUsbData()

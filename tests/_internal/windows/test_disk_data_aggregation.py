@@ -3,13 +3,13 @@ from tests.markers import windows_only
 
 
 @windows_only
-class TestDataAggregrator(unittest.TestCase):
+class TestDiskDataAggregrator(unittest.TestCase):
     def test_data_aggregation(self):
         from mbed_devices._internal.windows.disk_drive import DiskDrive
         from mbed_devices._internal.windows.disk_partition import DiskPartition
         from mbed_devices._internal.windows.logical_disk import LogicalDisk
         from mbed_devices._internal.windows.volume_set import VolumeInformation, DriveType
-        from mbed_devices._internal.windows.disk_aggregation import AggregatedDiskData, DiskDataAggregator
+        from mbed_devices._internal.windows.disk_aggregation import AggregatedDiskData, DiskDataAggregator, WindowsUID
 
         disk1 = DiskDrive()
         disk1.set_data_values(
@@ -160,6 +160,7 @@ class TestDataAggregrator(unittest.TestCase):
         expected_aggregated_object = AggregatedDiskData()
         expected_aggregated_object.set_data_values(
             dict(
+                uid=WindowsUID(uid="4454646", raw_uid=None, serial_number=None),
                 label="F:",
                 description="Removable Disk",
                 free_space="67096576",
@@ -198,7 +199,7 @@ class TestDataAggregrator(unittest.TestCase):
         disks = SystemDiskInformation()
         c_data = disks.get_disk_information_by_label("c:")
         self.assertFalse(c_data.is_undefined)
-        serial_number = c_data.serial_number
-        self.assertIsNotNone(serial_number)
-        labels = [d.label.lower() for d in disks.get_disk_information(serial_number)]
+        uid = c_data.uid
+        self.assertIsNotNone(uid)
+        labels = [d.label.lower() for d in disks.get_disk_information(uid)]
         self.assertTrue("c:" in labels)

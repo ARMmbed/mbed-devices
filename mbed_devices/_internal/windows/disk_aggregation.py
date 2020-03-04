@@ -10,6 +10,7 @@ from typing import NamedTuple, cast
 
 from mbed_devices._internal.windows.component_descriptor import ComponentDescriptor, ComponentDescriptorWrapper
 from mbed_devices._internal.windows.component_descriptor_utils import retain_value_or_default
+from mbed_devices._internal.windows.windows_identifier import WindowsUID
 from mbed_devices._internal.windows.disk_drive import DiskDrive
 from mbed_devices._internal.windows.disk_partition import DiskPartition
 from mbed_devices._internal.windows.disk_partition_logical_disk_relationships import (
@@ -22,6 +23,7 @@ from mbed_devices._internal.windows.volume_set import VolumeInformation, get_vol
 class AggregatedDiskDataDefinition(NamedTuple):
     """Data aggregation with regards to a disk."""
 
+    uid: WindowsUID  # see WindowsUID
     label: str  # e.g. C:
     description: str  # e.g. Removal Disk
     free_space: int
@@ -100,6 +102,7 @@ class DiskDataAggregator:
         aggregatedData = AggregatedDiskData()
         aggregatedData.set_data_values(
             dict(
+                uid=corresponding_physical.uid,
                 label=logical_disk.component_id,
                 description=logical_disk.get("Description"),
                 free_space=logical_disk.get("FreeSpace"),
@@ -121,7 +124,7 @@ class DiskDataAggregator:
         return aggregatedData
 
 
-class WindowsDataAggregator(DiskDataAggregator):
+class WindowsDiskDataAggregator(DiskDataAggregator):
     """Disk Data aggregator for Windows."""
 
     def __init__(self) -> None:
@@ -149,12 +152,12 @@ class SystemDiskInformation:
         self._disk_data_by_label: Optional[dict] = None
 
     def _load_data(self) -> None:
-        aggregator = WindowsDataAggregator()
-        disk_data_by_serialnumber: dict = dict()
+        aggregator = WindowsDiskDataAggregator()
+        disk_data_by_serialnumber: dict = dict()  # The type is enforced so that mypy is happy.
         disk_data_by_label = dict()
         for l in ComponentDescriptorWrapper(LogicalDisk).element_generator():
             aggregation = aggregator.aggregate(cast(LogicalDisk, l))
-            key = aggregation.get("serial_number").lower()
+            key = aggregation.get("uid").presumed_serial_number
             disk_data_list = disk_data_by_serialnumber.get(key, list())
             disk_data_list.append(aggregation)
             disk_data_by_serialnumber[key] = disk_data_list
@@ -163,7 +166,7 @@ class SystemDiskInformation:
         self._disk_data_by_label = disk_data_by_label
 
     @property
-    def disk_data_by_serialnumber(self) -> dict:
+    def disk_data_by_serial_number(self) -> dict:
         """Gets system's disk data by serial number."""
         if not self._disk_data_by_serial_number:
             self._load_data()
@@ -176,9 +179,9 @@ class SystemDiskInformation:
             self._load_data()
         return self._disk_data_by_label if self._disk_data_by_label else dict()
 
-    def get_disk_information(self, serial_number: str) -> List[AggregatedDiskData]:
-        """Gets all disk information for a given serial number."""
-        return self.disk_data_by_serialnumber.get(serial_number.lower(), list())
+    def get_disk_information(self, uid: WindowsUID) -> List[AggregatedDiskData]:
+        """Gets all disk information for a given UID."""
+        return self.disk_data_by_serial_number.get(uid.presumed_serial_number, list())
 
     def get_disk_information_by_label(self, label: str) -> AggregatedDiskData:
         """Gets all disk information for a given label."""

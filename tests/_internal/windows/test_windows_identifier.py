@@ -52,6 +52,35 @@ class TestWindowsUID(unittest.TestCase):
         # Equals other objects with serial number same to uid
         uid6 = WindowsUID(uid="uid6454", raw_uid="/uid6454&006", serial_number="uid1")
         self.assertEqual(uid1, uid6)
+        # Tests with real data examples: disk UIDs and equivalent USB hosts UIDs.
+        # Daplink:
+        uid7 = WindowsUID(
+            uid="0240000034544e45001a00018aa900292011000097969900&0",
+            raw_uid="0240000034544E45001A00018AA900292011000097969900&0",
+            serial_number="0240000034544e45001a00018aa900292011000097969900",
+        )
+        uid8 = WindowsUID(
+            uid="0240000034544e45001a00018aa900292011000097969900",
+            raw_uid="0240000034544E45001A00018AA900292011000097969900",
+            serial_number=None,
+        )
+        self.assertEqual(uid7, uid8)
+        # JLink:
+        uid9 = WindowsUID(
+            uid="000440112138", raw_uid="9&DBDECF6&0&000440112138&0", serial_number="                       134657890"
+        )
+        uid10 = WindowsUID(uid="000440112138", raw_uid="000440112138", serial_number="8&2f125ec6&0")
+        self.assertEqual(uid9, uid10)
+        # STLink
+        uid11 = WindowsUID(
+            uid="0672ff574953867567051035",
+            raw_uid="9&3849C7A8&0&0672FF574953867567051035&0",
+            serial_number="0672FF574953867567051035",
+        )
+        uid12 = WindowsUID(
+            uid="0672ff574953867567051035", raw_uid="0672FF574953867567051035", serial_number="8&254f12cf&0"
+        )
+        self.assertEqual(uid11, uid12)
 
     def test_serial_number(self):
         # Tests trying to determine the most plausible serial number from a set of values.
@@ -107,6 +136,38 @@ class TestWindowsUID(unittest.TestCase):
         # Checks lookup in set
         self.assertIn(uid3, (uid1, uid4))
         self.assertIn(uid4, (uid1, uid3))
+
+    def test_related_uid_lookup(self):
+        # Tests dictionary lookup using real data.
+        # UIDs are corresponding to Disk UIDs and related USB HUB UIDs.
+        # Daplink
+        uid11 = WindowsUID(
+            uid="0240000034544e45001a00018aa900292011000097969900&0",
+            raw_uid="0240000034544E45001A00018AA900292011000097969900&0",
+            serial_number="0240000034544e45001a00018aa900292011000097969900",
+        )
+        uid12 = WindowsUID(
+            uid="0240000034544e45001a00018aa900292011000097969900",
+            raw_uid="0240000034544E45001A00018AA900292011000097969900",
+            serial_number=None,
+        )
+        self.assertIn(uid12.presumed_serial_number, {uid11.presumed_serial_number: ""})
+        # JLink
+        uid21 = WindowsUID(
+            uid="000440112138", raw_uid="9&DBDECF6&0&000440112138&0", serial_number="                       134657890"
+        )
+        uid22 = WindowsUID(uid="000440112138", raw_uid="000440112138", serial_number="8&2f125ec6&0")
+        self.assertIn(uid21.presumed_serial_number, {uid22.presumed_serial_number: ""})
+        # STLink
+        uid31 = WindowsUID(
+            uid="0672ff574953867567051035",
+            raw_uid="9&3849C7A8&0&0672FF574953867567051035&0",
+            serial_number="0672FF574953867567051035",
+        )
+        uid32 = WindowsUID(
+            uid="0672ff574953867567051035", raw_uid="0672FF574953867567051035", serial_number="8&254f12cf&0"
+        )
+        self.assertIn(uid31.presumed_serial_number, {uid32.presumed_serial_number: ""})
 
     def test_ordering(self):
         uid1 = WindowsUID(uid="123456789", raw_uid="/uid1&002", serial_number=None)
