@@ -4,27 +4,27 @@ from pyfakefs.fake_filesystem_unittest import Patcher
 from mbed_devices._internal.htm_file import HTMFileContentsParser, OnlineId
 
 
-class TestCode(TestCase):
-    def test_reads_code_from_code_attribute(self):
+class TestProductCode(TestCase):
+    def test_reads_product_code_from_code_attribute(self):
         code = "02400201B80ECE4A45F033F2"
         file_contents = f'<meta http-equiv="refresh" content="0; url=http://mbed.org/device/?code={code}"/>'
 
         parser = HTMFileContentsParser(file_contents)
-        self.assertEqual(parser.code, code)
+        self.assertEqual(parser.product_code, code[:4])
 
-    def test_reads_code_from_auth_attribute(self):
-        code = "101000000000000000000002F7F35E602eeb0bb9b632205c51f6c357aeee7bc9"
+    def test_reads_product_code_from_auth_attribute(self):
+        auth = "101000000000000000000002F7F35E602eeb0bb9b632205c51f6c357aeee7bc9"
         file_contents = (
             '<meta http-equiv="refresh" '
-            f'content="0; url=http://mbed.org/start?auth={code}&loader=11972&firmware=16457&configuration=4" />'
+            f'content="0; url=http://mbed.org/start?auth={auth}&loader=11972&firmware=16457&configuration=4" />'
         )
 
         parser = HTMFileContentsParser(file_contents)
-        self.assertEqual(parser.code, code)
+        self.assertEqual(parser.product_code, auth[:4])
 
-    def test_none_if_no_code(self):
+    def test_none_if_no_product_code(self):
         parser = HTMFileContentsParser("")
-        self.assertIsNone(parser.code)
+        self.assertIsNone(parser.product_code)
 
 
 class TestOnlineId(TestCase):

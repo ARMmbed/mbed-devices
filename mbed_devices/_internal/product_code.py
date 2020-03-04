@@ -33,7 +33,4 @@ def _get_all_htm_files(directories: List[pathlib.Path]) -> Iterable[pathlib.Path
 
 
 def _extract_product_code_from_htm_file(file: pathlib.Path) -> Optional[str]:
-    code = HTMFileContentsParser.from_file(str(file)).code
-    if code:
-        return code[:4]
-    return None
+    return HTMFileContentsParser.from_file(str(file)).product_code

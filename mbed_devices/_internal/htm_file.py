@@ -89,15 +89,15 @@ class HTMFileContentsParser:
         return cls(file_contents=pathlib.Path(file_path).read_text())
 
     @property
-    def code(self) -> Optional[str]:
-        """Returns code parsed from the file contents, None if not found."""
+    def product_code(self) -> Optional[str]:
+        """Returns product code parsed from the file contents, None if not found."""
         regex = r"""
-            (?:code|auth)=          # attribute name
-            (?P<code>[a-fA-F0-9]+)  # code identifier
+            (?:code|auth)=                   # attribute name
+            (?P<product_code>[a-fA-F0-9]{4}) # product code
         """
         match = re.search(regex, self._file_contents, re.VERBOSE)
         if match:
-            return match["code"]
+            return match["product_code"]
         return None
 
     @property

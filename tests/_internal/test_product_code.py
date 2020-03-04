@@ -63,21 +63,11 @@ class TestGetAllHTMFiles(TestCase):
 class TestExtractProductCodeFromHTMFile(TestCase):
     def test_uses_htm_file_parser_to_extract_product_code(self, from_file):
         code = "0123456"
-        instance = mock.Mock(spec_set=HTMFileContentsParser)
-        type(instance).code = mock.PropertyMock(return_value=code)
+        instance = mock.Mock(spec_set=HTMFileContentsParser, product_code=code)
         from_file.return_value = instance
         file = pathlib.Path("/foo/bar.htm")
 
         subject = _extract_product_code_from_htm_file(file)
 
-        self.assertEqual(subject, code[:4])
+        self.assertEqual(subject, code)
         from_file.assert_called_once_with(str(file))
-
-    def test_returns_none_if_no_product_code_available(self, from_file):
-        instance = mock.Mock(spec_set=HTMFileContentsParser, code=None)
-        from_file.return_value = instance
-        file = pathlib.Path("/foo/bar.htm")
-
-        subject = _extract_product_code_from_htm_file(file)
-
-        self.assertIsNone(subject)
