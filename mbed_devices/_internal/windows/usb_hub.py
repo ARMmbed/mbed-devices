@@ -1,10 +1,11 @@
 """Defines a USB hub."""
 
-from typing import NamedTuple, Dict, List, cast, Optional
+from typing import NamedTuple, Dict, List, cast, Optional, Set, Generator
 
 from mbed_devices._internal.windows.component_descriptor import ComponentDescriptor, ComponentDescriptorWrapper
 from mbed_devices._internal.windows.usb_device_identifier import parse_device_id, UsbIdentifier
 from mbed_devices._internal.windows.usb_controller import UsbController
+from mbed_devices._internal.windows.device_instance_id import get_children_instance_id
 
 
 class UsbHubMsdnDefinition(NamedTuple):
@@ -60,6 +61,11 @@ class UsbHub(ComponentDescriptor):
         """Returns the device id field."""
         return cast(str, self.get("DeviceID"))
 
+    @property
+    def pnp_id(self) -> str:
+        """Returns the plug and play id field."""
+        return cast(str, self.get("PNPDeviceID"))
+
 
 class SystemUsbDeviceInformation:
     """Usb Hub cache for this system.
@@ -72,6 +78,7 @@ class SystemUsbDeviceInformation:
     def __init__(self) -> None:
         """Initialiser."""
         self.cache: Optional[Dict[UsbIdentifier, List[UsbHub]]] = None
+        self.ids_cache: Optional[Set[UsbIdentifier]] = None
 
     def _list_usb_controller_ids(self) -> List[UsbIdentifier]:
         return cast(
@@ -82,17 +89,38 @@ class SystemUsbDeviceInformation:
             ],
         )
 
+    def _iterate_over_hubs(self) -> Generator["ComponentDescriptor", None, None]:
+        return ComponentDescriptorWrapper(UsbHub).element_generator()
+
+    def _populate_id_cache_with_non_serialnumbers(self) -> None:
+        if not self.cache or not self.ids_cache:
+            return
+        for usb_id in self.cache:
+            if usb_id not in self.ids_cache:
+                self.ids_cache.add(usb_id)
+
+    def _determine_potential_serial_number(self, usb_device: UsbHub) -> Optional[str]:
+        """Fetches the ParentIdPrefix of a USB hub."""
+        return get_children_instance_id(usb_device.pnp_id)
+
     def _load(self) -> None:
         """Populates the cache."""
         self.cache = cast(Dict[UsbIdentifier, List[UsbHub]], dict())
+        self.ids_cache = cast(Set[UsbIdentifier], set())
         controllers = self._list_usb_controller_ids()
-        for usb_device in ComponentDescriptorWrapper(UsbHub).element_generator():
-            usb_id = parse_device_id(usb_device.component_id)
+        for usb_device in self._iterate_over_hubs():
+            usb_id = parse_device_id(
+                usb_device.component_id, serial_number=self._determine_potential_serial_number(cast(UsbHub, usb_device))
+            )
             if usb_id in controllers:
                 continue
             entry = self.cache.get(usb_id, list())
             entry.append(cast(UsbHub, usb_device))
             self.cache[usb_id] = entry
+
+            if usb_id.contains_genuine_serial_number():
+                self.ids_cache.add(usb_id)
+        self._populate_id_cache_with_non_serialnumbers()
 
     @property
     def usb_devices(self) -> Dict[UsbIdentifier, List[UsbHub]]:
@@ -107,4 +135,6 @@ class SystemUsbDeviceInformation:
 
     def usb_device_ids(self) -> List[UsbIdentifier]:
         """Gets system usb device IDs."""
-        return cast(List[UsbIdentifier], self.usb_devices.keys())
+        if not self.ids_cache:
+            self._load()
+        return cast(List[UsbIdentifier], self.ids_cache)
