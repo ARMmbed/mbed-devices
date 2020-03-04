@@ -38,25 +38,25 @@ class TestBuildDevice(TestCase):
 
 
 class TestGetMbedTargetForCandidate(TestCase):
-    @mock.patch("mbed_devices.mbed_devices.get_target")
+    @mock.patch("mbed_devices.mbed_devices.get_target_by_product_code")
     @mock.patch("mbed_devices.mbed_devices.extract_product_code")
-    def test_uses_product_code_to_fetch_target(self, extract_product_code, get_target):
+    def test_uses_product_code_to_fetch_target(self, extract_product_code, get_target_by_product_code):
         candidate = CandidateDeviceFactory()
-        self.assertEqual(_get_mbed_target_for_candidate(candidate), get_target.return_value)
+        self.assertEqual(_get_mbed_target_for_candidate(candidate), get_target_by_product_code.return_value)
         extract_product_code.assert_called_once_with(candidate)
-        get_target.assert_called_once_with(extract_product_code.return_value)
+        get_target_by_product_code.assert_called_once_with(extract_product_code.return_value)
 
-    @mock.patch("mbed_devices.mbed_devices.get_target")
+    @mock.patch("mbed_devices.mbed_devices.get_target_by_product_code")
     @mock.patch("mbed_devices.mbed_devices.extract_product_code")
-    def test_returns_none_when_product_code_cannot_be_extracted(self, extract_product_code, get_target):
+    def test_returns_none_when_product_code_cannot_be_extracted(self, extract_product_code, get_target_by_product_code):
         candidate = CandidateDeviceFactory()
         extract_product_code.side_effect = MissingProductCode
         self.assertIsNone(_get_mbed_target_for_candidate(candidate))
-        get_target.assert_not_called()
+        get_target_by_product_code.assert_not_called()
 
-    @mock.patch("mbed_devices.mbed_devices.get_target")
+    @mock.patch("mbed_devices.mbed_devices.get_target_by_product_code")
     @mock.patch("mbed_devices.mbed_devices.extract_product_code")
-    def test_returns_none_when_target_not_found(self, extract_product_code, get_target):
+    def test_returns_none_when_target_not_found(self, extract_product_code, get_target_by_product_code):
         candidate = CandidateDeviceFactory()
-        get_target.side_effect = ToolsError
+        get_target_by_product_code.side_effect = ToolsError
         self.assertIsNone(_get_mbed_target_for_candidate(candidate))
