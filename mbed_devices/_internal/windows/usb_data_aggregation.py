@@ -3,9 +3,12 @@ from typing import NamedTuple, List, cast
 
 from mbed_devices._internal.windows.component_descriptor import ComponentDescriptor
 from mbed_devices._internal.windows.disk_aggregation import SystemDiskInformation, AggregatedDiskData
-from mbed_devices._internal.windows.serial_port import SerialPort, SystemSerialPortInformation
+from mbed_devices._internal.windows.serial_port import SerialPort
+from mbed_devices._internal.windows.serial_port_data_loader import SystemSerialPortInformation
 from mbed_devices._internal.windows.usb_device_identifier import UsbIdentifier
-from mbed_devices._internal.windows.usb_hub import UsbHub, SystemUsbDeviceInformation
+from mbed_devices._internal.windows.usb_hub import UsbHub
+from mbed_devices._internal.windows.usb_hub_data_loader import SystemUsbDeviceInformation
+from mbed_devices._internal.windows.system_data_loader import SystemDataLoader
 
 
 class AggregatedUsbDataDefinition(NamedTuple):
@@ -76,11 +79,13 @@ class UsbDataAggregator:
 class SystemUsbData:
     """System in charge of gathering all the data related to USB devices."""
 
-    def __init__(self) -> None:
+    def __init__(self, data_loader: SystemDataLoader) -> None:
         """Initialiser."""
-        self._usb_devices = SystemUsbDeviceInformation()
+        self._usb_devices = SystemUsbDeviceInformation(data_loader)
         self._aggregator = UsbDataAggregator(
-            disk_data=SystemDiskInformation(), serial_data=SystemSerialPortInformation(), usb_data=self._usb_devices
+            disk_data=SystemDiskInformation(data_loader),
+            serial_data=SystemSerialPortInformation(data_loader),
+            usb_data=self._usb_devices,
         )
 
     def all(self) -> List[AggregatedUsbData]:

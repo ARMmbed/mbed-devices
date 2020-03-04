@@ -23,7 +23,8 @@ MOCKED_SERIAL_NUMBER_DATA = {
 
 
 def generate_mocked_system_usb_device_information():
-    from mbed_devices._internal.windows.usb_hub import SystemUsbDeviceInformation, UsbHub, UsbIdentifier
+    from mbed_devices._internal.windows.usb_hub_data_loader import SystemUsbDeviceInformation, UsbHub, UsbIdentifier
+    from mbed_devices._internal.windows.system_data_loader import SystemDataLoader
 
     controllers = [
         UsbIdentifier(
@@ -88,7 +89,14 @@ def generate_mocked_system_usb_device_information():
         for uid in controllers
     ]
 
+    class MockedDataLoader(SystemDataLoader):
+        def _load(self):
+            pass
+
     class MockedSystemUsbDeviceInformation(SystemUsbDeviceInformation):
+        def __init__(self):
+            super().__init__(MockedDataLoader())
+
         def _list_usb_controller_ids(self):
             return controllers
 
@@ -108,7 +116,7 @@ def generate_mocked_system_usb_device_information():
 @windows_only
 class TestUsbHub(unittest.TestCase):
     def test_system_usb_ids_list(self):
-        from mbed_devices._internal.windows.usb_hub import UsbIdentifier
+        from mbed_devices._internal.windows.usb_hub_data_loader import UsbIdentifier
 
         mock = generate_mocked_system_usb_device_information()
         expected_values = {
@@ -191,7 +199,7 @@ class TestUsbHub(unittest.TestCase):
             self.assertIn(id, cache)
 
     def test_get_usb_interfaces(self):
-        from mbed_devices._internal.windows.usb_hub import UsbIdentifier
+        from mbed_devices._internal.windows.usb_hub_data_loader import UsbIdentifier
 
         known_usb = UsbIdentifier(
             UID=WindowsUID(

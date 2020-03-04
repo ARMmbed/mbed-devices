@@ -8,14 +8,12 @@ https://serverfault.com/questions/398469/what-are-the-minimum-permissions-to-rea
 """
 
 import re
-from typing import NamedTuple, Optional, Generator, cast, List
+from typing import NamedTuple, cast
 
 from mbed_devices._internal.windows.component_descriptor import (
     ComponentDescriptor,
     UNKNOWN_VALUE,
-    ComponentDescriptorWrapper,
 )
-from mbed_devices._internal.windows.usb_device_identifier import UsbIdentifier, parse_device_id
 
 CAPTION_PATTERN = re.compile(f"^.* [(](.*)[)]$")
 
@@ -86,28 +84,7 @@ class SerialPort(ComponentDescriptor):
         """Gets the port name."""
         return parse_caption(self.get("Caption"))
 
-
-class SystemSerialPortInformation:
-    """All information about the serial ports of the current system."""
-
-    def __init__(self) -> None:
-        """Initialiser."""
-        self._serial_port_by_usb_id: Optional[dict] = None
-
-    def _load_data(self) -> None:
-        self._serial_port_by_usb_id = {
-            parse_device_id(p.get("PNPDeviceID")): p
-            for p in cast(Generator[SerialPort, None, None], ComponentDescriptorWrapper(SerialPort).element_generator())
-        }
-
     @property
-    def serial_port_data_by_id(self) -> dict:
-        """Gets system's serial ports by usb id."""
-        if not self._serial_port_by_usb_id:
-            self._load_data()
-        return self._serial_port_by_usb_id if self._serial_port_by_usb_id else dict()
-
-    def get_serial_port_information(self, usb_id: UsbIdentifier) -> List[SerialPort]:
-        """Gets all disk information for a given serial number."""
-        port = self.serial_port_data_by_id.get(usb_id)
-        return [port] if port else list()
+    def pnp_id(self) -> str:
+        """Gets the Plug and play id."""
+        return cast(str, self.get("PNPDeviceID"))

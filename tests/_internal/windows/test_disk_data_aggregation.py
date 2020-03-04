@@ -195,8 +195,9 @@ class TestDiskDataAggregrator(unittest.TestCase):
     def test_system_disk_data(self):
         # On Windows, C: is the default primary drive and hence we should always get information about it.
         from mbed_devices._internal.windows.disk_aggregation import SystemDiskInformation
+        from mbed_devices._internal.windows.system_data_loader import SystemDataLoader
 
-        disks = SystemDiskInformation()
+        disks = SystemDiskInformation(SystemDataLoader())
         c_data = disks.get_disk_information_by_label("c:")
         self.assertFalse(c_data.is_undefined)
         uid = c_data.uid

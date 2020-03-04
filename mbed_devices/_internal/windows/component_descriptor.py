@@ -3,6 +3,7 @@ import logging
 from abc import ABC, abstractmethod
 from typing import List, Any, Generator, Optional, NamedTuple, cast
 
+import pythoncom
 import win32com.client
 
 from mbed_devices._internal.windows.component_descriptor_utils import (
@@ -91,6 +92,12 @@ class Win32Wrapper:
 
     def __init__(self) -> None:
         """Wrapper initialisation."""
+        # Setting pyWin32 so that it can be used across multiple threads
+        # See:
+        # https://stackoverflow.com/questions/37258257/why-does-this-script-not-work-with-threading-python
+        # https://gist.github.com/vlasenkov/f8fe40d5b2d9e43fd46ad8363067acce
+        # https://stackoverflow.com/questions/26764978/using-win32com-with-multithreading/27966218#27966218
+        pythoncom.CoInitialize()
         self.wmi = win32com.client.GetObject("winmgmts:")
 
     def _read_cdispatch_fields(self, win32_element: Any, element_fields_list: List[str]) -> dict:

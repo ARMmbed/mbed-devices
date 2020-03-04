@@ -4,7 +4,7 @@ import random
 
 
 @windows_only
-class TestDataAggregrator(TestCase):
+class TestSerialPort(TestCase):
     def test_retrieve_port_name(self):
         from mbed_devices._internal.windows.serial_port import parse_caption
         from mbed_devices._internal.windows.component_descriptor import UNKNOWN_VALUE

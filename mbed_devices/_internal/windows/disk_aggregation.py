@@ -8,7 +8,7 @@ as a single object: AggregatedDiskData.
 from typing import List, Optional, Callable
 from typing import NamedTuple, cast
 
-from mbed_devices._internal.windows.component_descriptor import ComponentDescriptor, ComponentDescriptorWrapper
+from mbed_devices._internal.windows.component_descriptor import ComponentDescriptor
 from mbed_devices._internal.windows.component_descriptor_utils import retain_value_or_default
 from mbed_devices._internal.windows.windows_identifier import WindowsUID
 from mbed_devices._internal.windows.disk_drive import DiskDrive
@@ -18,6 +18,7 @@ from mbed_devices._internal.windows.disk_partition_logical_disk_relationships im
 )
 from mbed_devices._internal.windows.logical_disk import LogicalDisk
 from mbed_devices._internal.windows.volume_set import VolumeInformation, get_volume_information
+from mbed_devices._internal.windows.system_data_loader import SystemDataLoader, ComponentsLoader
 
 
 class AggregatedDiskDataDefinition(NamedTuple):
@@ -127,17 +128,19 @@ class DiskDataAggregator:
 class WindowsDiskDataAggregator(DiskDataAggregator):
     """Disk Data aggregator for Windows."""
 
-    def __init__(self) -> None:
+    def __init__(self, data_loader: SystemDataLoader) -> None:
         """Initialiser."""
         super().__init__(
             physical_disks={
                 d.Index: d  # type: ignore
-                for d in ComponentDescriptorWrapper(DiskDrive).element_generator()
+                for d in ComponentsLoader(data_loader, DiskDrive).element_generator()
             },
-            partition_disks={p.component_id: p for p in ComponentDescriptorWrapper(DiskPartition).element_generator()},
+            partition_disks={
+                p.component_id: p for p in ComponentsLoader(data_loader, DiskPartition).element_generator()
+            },
             logical_partition_relationships={
                 r.logical_disk_id: r.disk_partition_id  # type: ignore
-                for r in ComponentDescriptorWrapper(DiskPartitionLogicalDiskRelationship).element_generator()
+                for r in ComponentsLoader(data_loader, DiskPartitionLogicalDiskRelationship).element_generator()
             },
             lookup_volume_information=lambda logical_disk: get_volume_information(logical_disk.component_id),
         )
@@ -146,16 +149,17 @@ class WindowsDiskDataAggregator(DiskDataAggregator):
 class SystemDiskInformation:
     """All information about disks on the current system."""
 
-    def __init__(self) -> None:
+    def __init__(self, data_loader: SystemDataLoader) -> None:
         """Initialiser."""
         self._disk_data_by_serial_number: Optional[dict] = None
         self._disk_data_by_label: Optional[dict] = None
+        self._data_loader = data_loader
 
     def _load_data(self) -> None:
-        aggregator = WindowsDiskDataAggregator()
+        aggregator = WindowsDiskDataAggregator(self._data_loader)
         disk_data_by_serialnumber: dict = dict()  # The type is enforced so that mypy is happy.
         disk_data_by_label = dict()
-        for l in ComponentDescriptorWrapper(LogicalDisk).element_generator():
+        for l in ComponentsLoader(self._data_loader, LogicalDisk).element_generator():
             aggregation = aggregator.aggregate(cast(LogicalDisk, l))
             key = aggregation.get("uid").presumed_serial_number
             disk_data_list = disk_data_by_serialnumber.get(key, list())
