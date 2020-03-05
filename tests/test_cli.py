@@ -1,14 +1,16 @@
 import json
 import pathlib
-from unittest import TestCase, mock
 from click.testing import CliRunner
 from mbed_targets import MbedTarget
+from tabulate import tabulate
+from unittest import TestCase, mock
 
 from mbed_devices.mbed_tools.cli import (
     cli,
     list_connected_devices,
     _build_tabular_output,
     _build_json_output,
+    _get_build_targets,
 )
 from mbed_devices import Device
 
@@ -53,45 +55,41 @@ class TestBuildTableOutput(TestCase):
     def test_returns_tabularised_representation_of_devices(self):
         device = Device(
             mbed_target=mock.Mock(
-                spec_set=MbedTarget,
-                board_name="Foo",
-                build_variant=("S", "NS"),
-                board_type="I'm a consistent target db field",
+                spec_set=MbedTarget, board_name="board-name", build_variant=("S", "NS"), board_type="board-type",
             ),
-            serial_number="nice serial",
-            serial_port="I'm a serial port",
+            serial_number="serial-number",
+            serial_port="serial-port",
             mount_points=[pathlib.Path("/Volumes/FOO"), pathlib.Path("/Volumes/BAR")],
         )
 
         output = _build_tabular_output([device])
 
-        self.assertIn(device.mbed_target.board_name, output)
-        self.assertIn(device.serial_number, output)
-        self.assertIn(device.serial_port, output)
-        self.assertIn(", ".join(str(m) for m in device.mount_points), output)
-        self.assertIn(f"{device.mbed_target.board_type}_{device.mbed_target.build_variant[0]}", output)
-        self.assertIn(f"{device.mbed_target.board_type}_{device.mbed_target.build_variant[1]}", output)
+        expected_output = tabulate(
+            [
+                [
+                    device.mbed_target.board_name,
+                    device.serial_number,
+                    device.serial_port,
+                    "\n".join(map(str, device.mount_points)),
+                    "\n".join(_get_build_targets(device.mbed_target)),
+                ]
+            ],
+            headers=["Board name", "Serial number", "Serial port", "Mount point(s)", "Build target(s)"],
+        )
+        self.assertEqual(output, expected_output)
 
-    def test_handles_unknown_mbed_target(self):
+    def test_displays_unknown_values(self):
         device = Device(
-            mbed_target=None, serial_number="serial", serial_port="COM1", mount_points=[pathlib.Path("somepath")],
+            mbed_target=None, serial_number="serial", serial_port=None, mount_points=[pathlib.Path("somepath")],
         )
 
         output = _build_tabular_output([device])
 
-        self.assertIn("UNKNOWN", output)
-
-    def test_handles_unknown_serial_port(self):
-        device = Device(
-            mbed_target=mock.Mock(spec_set=MbedTarget, board_name="Bar", board_type="FooBar", build_variant=()),
-            serial_number="serial",
-            serial_port=None,
-            mount_points=[pathlib.Path("somepath")],
+        expected_output = tabulate(
+            [["UNKNOWN", device.serial_number, "UNKNOWN", "\n".join(map(str, device.mount_points)), "UNKNOWN"]],
+            headers=["Board name", "Serial number", "Serial port", "Mount point(s)", "Build target(s)"],
         )
-
-        output = _build_tabular_output([device])
-
-        self.assertIn("UNKNOWN", output)
+        self.assertEqual(output, expected_output)
 
 
 class TestBuildJsonOutput(TestCase):
@@ -113,7 +111,6 @@ class TestBuildJsonOutput(TestCase):
         )
 
         output = _build_json_output([device])
-        build_targets = [f"{mbed_target.board_type}_{v}" for v in mbed_target.build_variant] + [mbed_target.board_type]
         expected_output = json.dumps(
             [
                 {
@@ -126,7 +123,7 @@ class TestBuildJsonOutput(TestCase):
                         "board_name": mbed_target.board_name,
                         "mbed_os_support": mbed_target.mbed_os_support,
                         "mbed_enabled": mbed_target.mbed_enabled,
-                        "build_targets": build_targets,
+                        "build_targets": _get_build_targets(mbed_target),
                     },
                 }
             ],
@@ -145,3 +142,10 @@ class TestBuildJsonOutput(TestCase):
         )
 
         self.assertEqual(output, expected_output)
+
+
+class TestGetBuildTargets(TestCase):
+    def test_returns_base_target_and_all_variants(self):
+        mbed_target = mock.Mock(spec_set=MbedTarget, build_variant=("S", "NS"), board_type="FOO")
+
+        self.assertEqual(_get_build_targets(mbed_target), ["FOO_S", "FOO_NS", "FOO"])
