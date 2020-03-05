@@ -1,6 +1,7 @@
 """Entry point for mbed-tools cli."""
 import click
 import json
+from operator import attrgetter
 from typing import Iterable
 from tabulate import tabulate
 
@@ -14,7 +15,7 @@ from mbed_targets import MbedTarget
 )
 def list_connected_devices(format):
     """Prints connected devices."""
-    devices = get_connected_devices()
+    devices = _sort_devices_by_name(get_connected_devices())
     output_builders = {
         "table": _build_tabular_output,
         "json": _build_json_output,
@@ -27,6 +28,10 @@ def list_connected_devices(format):
 
 
 cli = list_connected_devices
+
+
+def _sort_devices_by_name(devices: Iterable[Device]) -> Iterable[Device]:
+    return sorted(devices, key=attrgetter("mbed_target.board_name"))
 
 
 def _build_tabular_output(devices: Iterable[Device]) -> str:
