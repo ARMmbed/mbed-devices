@@ -35,11 +35,11 @@ def _build_tabular_output(devices: Iterable[Device]) -> str:
     for device in devices:
         devices_data.append(
             [
-                device.mbed_target.board_name if device.mbed_target else "UNKNOWN",
+                device.mbed_target.board_name,
                 device.serial_number,
                 device.serial_port or "UNKNOWN",
                 "\n".join(str(mount_point) for mount_point in device.mount_points),
-                "\n".join(_get_build_targets(device.mbed_target)) if device.mbed_target else "UNKNOWN",
+                "\n".join(_get_build_targets(device.mbed_target)),
             ]
         )
     return tabulate(devices_data, headers=headers)
@@ -49,23 +49,19 @@ def _build_json_output(devices: Iterable[Device]) -> str:
     devices_data = []
     for device in devices:
         mbed_target = device.mbed_target
-        if mbed_target:
-            mbed_target_data = {
-                "product_code": mbed_target.product_code,
-                "board_type": mbed_target.board_type,
-                "board_name": mbed_target.board_name,
-                "mbed_os_support": mbed_target.mbed_os_support,
-                "mbed_enabled": mbed_target.mbed_enabled,
-                "build_targets": _get_build_targets(mbed_target),
-            }
-        else:
-            mbed_target_data = None
         devices_data.append(
             {
                 "serial_number": device.serial_number,
                 "serial_port": device.serial_port,
                 "mount_points": [str(m) for m in device.mount_points],
-                "mbed_target": mbed_target_data,
+                "mbed_target": {
+                    "product_code": mbed_target.product_code,
+                    "board_type": mbed_target.board_type,
+                    "board_name": mbed_target.board_name,
+                    "mbed_os_support": mbed_target.mbed_os_support,
+                    "mbed_enabled": mbed_target.mbed_enabled,
+                    "build_targets": _get_build_targets(mbed_target),
+                },
             }
         )
     return json.dumps(devices_data, indent=4)

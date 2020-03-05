@@ -80,13 +80,24 @@ class TestBuildTableOutput(TestCase):
 
     def test_displays_unknown_values(self):
         device = Device(
-            mbed_target=None, serial_number="serial", serial_port=None, mount_points=[pathlib.Path("somepath")],
+            mbed_target=MbedTarget({}),
+            serial_number="serial",
+            serial_port=None,
+            mount_points=[pathlib.Path("somepath")],
         )
 
         output = _build_tabular_output([device])
 
         expected_output = tabulate(
-            [["UNKNOWN", device.serial_number, "UNKNOWN", "\n".join(map(str, device.mount_points)), "UNKNOWN"]],
+            [
+                [
+                    device.mbed_target.board_name,
+                    device.serial_number,
+                    "UNKNOWN",
+                    "\n".join(map(str, device.mount_points)),
+                    "\n".join(_get_build_targets(device.mbed_target)),
+                ]
+            ],
             headers=["Board name", "Serial number", "Serial port", "Mount point(s)", "Build target(s)"],
         )
         self.assertEqual(output, expected_output)
@@ -134,14 +145,11 @@ class TestBuildJsonOutput(TestCase):
 
     def test_empty_values_keys_are_always_present(self):
         """Asserts that keys are present even if value is None."""
-        device = Device(mbed_target=None, serial_number="foo", serial_port=None, mount_points=[],)
+        device = Device(mbed_target=MbedTarget({}), serial_number="foo", serial_port=None, mount_points=[],)
 
-        output = _build_json_output([device])
-        expected_output = json.dumps(
-            [{"serial_number": "foo", "serial_port": None, "mount_points": [], "mbed_target": None}], indent=4
-        )
+        output = json.loads(_build_json_output([device]))
 
-        self.assertEqual(output, expected_output)
+        self.assertIsNone(output[0]["serial_port"])
 
 
 class TestGetBuildTargets(TestCase):
