@@ -1,5 +1,4 @@
 from unittest import TestCase
-from pyfakefs.fake_filesystem_unittest import Patcher
 
 from mbed_devices._internal.htm_file import HTMFileContentsParser, OnlineId
 
@@ -41,13 +40,3 @@ class TestOnlineId(TestCase):
 
         parser = HTMFileContentsParser(file_contents)
         self.assertIsNone(parser.online_id)
-
-
-class TestFromFile(TestCase):
-    def test_initialises_parser_with_file_contents(self):
-        file_path = "/foo/bar.txt"
-        file_contents = "some contents"
-        with Patcher() as patcher:
-            patcher.fs.create_file(file_path, contents=file_contents)
-            parser = HTMFileContentsParser.from_file(file_path)
-        self.assertEqual(parser._file_contents, file_contents)

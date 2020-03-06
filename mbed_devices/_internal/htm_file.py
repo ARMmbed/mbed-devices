@@ -58,9 +58,8 @@ Its main goal is to provide a taste of different flavours of HTM files we need t
     </html>
 
 """
-import pathlib
 import re
-from typing import Type, TypeVar, Optional, NamedTuple
+from typing import Optional, NamedTuple
 
 
 class OnlineId(NamedTuple):
@@ -73,20 +72,12 @@ class OnlineId(NamedTuple):
     device_slug: str
 
 
-T = TypeVar("T", bound="HTMFileContentsParser")
-
-
 class HTMFileContentsParser:
     """Extracts information from MBED.HTM file contents."""
 
     def __init__(self, file_contents: str) -> None:
         """Initialises HTMFileContentsParser with file contents."""
         self._file_contents = file_contents
-
-    @classmethod
-    def from_file(cls: Type[T], file_path: str) -> T:
-        """Initialises HTMFileContentsParser with file contents read from given path."""
-        return cls(file_contents=pathlib.Path(file_path).read_text())
 
     @property
     def product_code(self) -> Optional[str]:
