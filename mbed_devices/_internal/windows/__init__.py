@@ -1,0 +1,1 @@
+"""Windows specific device detection."""

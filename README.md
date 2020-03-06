@@ -1,4 +1,4 @@
-# mbed-devices
+# Mbed Devices
 
 ![Package](https://img.shields.io/badge/Package-mbed--devices-lightgrey)
 [![Documentation](https://img.shields.io/badge/Documentation-GitHub_Pages-blue)](https://armmbed.github.io/mbed-devices)
@@ -7,15 +7,17 @@
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/mbed-devices)](https://pypi.org/project/mbed-devices/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/ARMmbed/mbed-devices/blob/master/LICENSE)
 
-[![Build Status](https://dev.azure.com/mbed-tools/mbed-devices/_apis/build/status/Build%20and%20Release?branchName=master)](https://dev.azure.com/mbed-tools/mbed-devices/_build/latest?definitionId=11&branchName=master)
+[![Build Status](https://dev.azure.com/mbed-tools/mbed-devices/_apis/build/status/Build%20and%20Release?branchName=master&stageName=CI%20Checkpoint)](https://dev.azure.com/mbed-tools/mbed-devices/_build/latest?definitionId=11&branchName=master)
 [![Test Coverage](https://codecov.io/gh/ARMmbed/mbed-devices/branch/master/graph/badge.svg)](https://codecov.io/gh/ARMmbed/mbed-devices)
 [![Maintainability](https://api.codeclimate.com/v1/badges/08971231f91470bf6d77/maintainability)](https://codeclimate.com/github/ARMmbed/mbed-devices/maintainability)
 
 ## Overview
 
-This package provides a way to list devices running Mbed OS connected to the computer this tool is run on.
+**This package allows to list Mbed OS devices which are connected to the host computer.**
 
-For a command line interface for Mbed OS please see the package mbed-tools.
+It is expected that this package will be used by developers of Mbed OS tooling rather than by users of Mbed OS. For
+a command line interface for Mbed OS please see the package [mbed-tools](https://github.com/ARMmbed/mbed-tools).
+
 ## Releases
 
 For release notes and a history of changes of all **production** releases, please see the following:
