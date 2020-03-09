@@ -8,7 +8,7 @@ import pathlib
 from typing import Callable, Iterable, List
 from mbed_targets import MbedTarget, UnknownTarget, get_target_by_product_code, get_target_by_online_id
 
-from mbed_devices._internal.htm_file import HTMFileContentsParser, OnlineId
+from mbed_devices._internal.htm_file import OnlineId, read_online_id, read_product_code
 from mbed_devices._internal.candidate_device import CandidateDevice
 
 
@@ -62,7 +62,7 @@ class ProductCodeNotFound(Exception):
 
 def _extract_product_code(all_files_contents: Iterable[str]) -> str:
     for contents in all_files_contents:
-        product_code = HTMFileContentsParser(contents).product_code
+        product_code = read_product_code(contents)
         if product_code:
             return product_code
     raise ProductCodeNotFound
@@ -74,7 +74,7 @@ class OnlineIdNotFound(Exception):
 
 def _extract_online_id(all_files_contents: Iterable[str]) -> OnlineId:
     for contents in all_files_contents:
-        online_id = HTMFileContentsParser(contents).online_id
+        online_id = read_online_id(contents)
         if online_id:
             return online_id
     raise OnlineIdNotFound
