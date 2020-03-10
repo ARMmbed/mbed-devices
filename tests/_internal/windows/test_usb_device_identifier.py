@@ -6,7 +6,7 @@ from tests.markers import windows_only
 
 
 @windows_only
-class TestDeviceIdParsing(TestCase):
+class TestUsbDeviceId(TestCase):
     """Tests based on https://docs.microsoft.com/en-us/windows-hardware/drivers/install/standard-usb-identifiers."""
 
     def test_single_interface_usb_device(self):
