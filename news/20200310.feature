@@ -1,0 +1,1 @@
+Ability to set DatabaseMode in public api
