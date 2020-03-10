@@ -1,16 +1,16 @@
 import pathlib
 from pyfakefs.fake_filesystem_unittest import Patcher
 from unittest import TestCase, mock
-from mbed_targets import UnknownTarget
+from mbed_targets import UnknownTarget, DatabaseMode
 
 from tests.factories import CandidateDeviceFactory
 from mbed_devices._internal.htm_file import OnlineId
 from mbed_devices._internal.resolve_target import (
-    UnableToBuildResolver,
     NoTargetForCandidate,
+    UnableToBuildResolver,
+    _build_target_resolver,
     _get_all_htm_files_contents,
     resolve_target,
-    _build_target_resolver,
 )
 
 
@@ -38,6 +38,15 @@ class TestResolveTarget(TestCase):
 
         with self.assertRaises(NoTargetForCandidate):
             resolve_target(candidate)
+
+    def test_uses_given_database_mode_to_resolve_targets(self, _build_target_resolver):
+        mode = DatabaseMode.ONLINE
+        resolver = mock.Mock()
+        _build_target_resolver.return_value = resolver
+
+        resolve_target(CandidateDeviceFactory(), mode)
+
+        resolver.assert_called_once_with(mode=mode)
 
 
 @mock.patch("mbed_devices._internal.resolve_target._get_all_htm_files_contents")

@@ -6,7 +6,7 @@ import functools
 import itertools
 import pathlib
 from typing import Callable, Iterable, List
-from mbed_targets import MbedTarget, UnknownTarget, get_target_by_product_code, get_target_by_online_id
+from mbed_targets import DatabaseMode, MbedTarget, UnknownTarget, get_target_by_online_id, get_target_by_product_code
 
 from mbed_devices._internal.htm_file import OnlineId, read_online_id, read_product_code
 from mbed_devices._internal.candidate_device import CandidateDevice
@@ -16,7 +16,7 @@ class NoTargetForCandidate(Exception):
     """Raised when target cannot be determined for a candidate."""
 
 
-def resolve_target(candidate: CandidateDevice) -> MbedTarget:
+def resolve_target(candidate: CandidateDevice, mode: DatabaseMode = DatabaseMode.AUTO) -> MbedTarget:
     """Resolves target for given CandidateDevice if possible.
 
     Currently, the mechanism for resolving targets relies on existence of HTM files in devices mass storage.
@@ -29,7 +29,7 @@ def resolve_target(candidate: CandidateDevice) -> MbedTarget:
         raise NoTargetForCandidate
 
     try:
-        return target_resolver()
+        return target_resolver(mode=mode)
     except UnknownTarget:
         raise NoTargetForCandidate
 
