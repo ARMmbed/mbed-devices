@@ -14,11 +14,12 @@ from mbed_devices._internal.resolve_target import (
 
 class TestResolveTarget(TestCase):
     @mock.patch("mbed_devices._internal.resolve_target._resolve_target_using_file_contents")
-    def test_resolves_target_using_file_contents_found_in_mount_points(self, _resolve_target_using_file_contents):
+    def test_resolves_target_using_htm_file_contents_found_in_mount_points(self, _resolve_target_using_file_contents):
         files = [(pathlib.Path("/test-1/mbed.htm"), "foo"), (pathlib.Path("/test-2/whatever.htm"), "bar")]
         with Patcher() as patcher:
             for (path, contents) in files:
                 patcher.fs.create_file(str(path), contents=contents)
+            patcher.fs.create_file("/test-1/._MBED.HTM", contents="hello")
             patcher.fs.create_file("/test-1/file.txt", contents="whatever")
 
             result = resolve_target(

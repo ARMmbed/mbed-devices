@@ -82,7 +82,11 @@ def _extract_online_id(all_files_contents: Iterable[str]) -> OnlineId:
 
 def _get_all_htm_files_contents(directories: Iterable[pathlib.Path]) -> List[str]:
     """Yields all htm files contents found in the list of given directories."""
-    extensions = [".htm", ".HTM"]
     files_in_each_directory = (directory.iterdir() for directory in directories)
     all_files = itertools.chain.from_iterable(files_in_each_directory)
-    return [file.read_text() for file in all_files if file.suffix in extensions]
+    return [file.read_text() for file in all_files if _is_htm_file(file)]
+
+
+def _is_htm_file(file: pathlib.Path) -> bool:
+    extensions = [".htm", ".HTM"]
+    return file.suffix in extensions and not file.name.startswith(".")
