@@ -23,12 +23,8 @@ def resolve_target(candidate: CandidateDevice) -> MbedTarget:
     The specification of those HTM files is that they redirect to devices product page on os.mbed.com.
     Information about Mbed Enabled requirements: https://www.mbed.com/en/about-mbed/mbed-enabled/requirements/
     """
-    return _resolve_target_using_file_contents(_get_all_htm_files_contents(candidate.mount_points))
-
-
-def _resolve_target_using_file_contents(all_files_contents: Iterable[str]) -> MbedTarget:
     try:
-        target_resolver = _build_target_resolver(all_files_contents)
+        target_resolver = _build_target_resolver(candidate)
     except UnableToBuildResolver:
         raise NoTargetForCandidate
 
@@ -42,7 +38,8 @@ class UnableToBuildResolver(Exception):
     """Raised when theres not enough information on the candidate to build a target resolver."""
 
 
-def _build_target_resolver(all_files_contents: Iterable[str]) -> Callable:
+def _build_target_resolver(candidate: CandidateDevice) -> Callable:
+    all_files_contents = _get_all_htm_files_contents(candidate.mount_points)
     try:
         product_code = _extract_product_code(all_files_contents)
         return functools.partial(get_target_by_product_code, product_code)
