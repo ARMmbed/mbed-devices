@@ -29,7 +29,7 @@ def get_all_usb_devices_data() -> List[USBDeviceTree]:
     """Returns parsed output of `system_profiler` call."""
     output = subprocess.check_output(["system_profiler", "-xml", "SPUSBDataType"], stderr=subprocess.DEVNULL)
     if output:
-        return plistlib.loads(output)
+        return cast(List[USBDeviceTree], plistlib.loads(output))
     return []
 
 

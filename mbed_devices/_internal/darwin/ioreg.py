@@ -1,7 +1,7 @@
 """Interactions with `ioreg`."""
 import plistlib
 import subprocess
-from typing import Any, Dict, Iterable, List, Optional
+from typing import Any, Dict, Iterable, List, Optional, cast
 from xml.parsers.expat import ExpatError
 
 
@@ -10,7 +10,7 @@ def get_data(device_name: str) -> List[Dict]:
     output = subprocess.check_output(["ioreg", "-a", "-r", "-n", device_name, "-l"])
     if output:
         try:
-            return plistlib.loads(output)
+            return cast(List[Dict], plistlib.loads(output))
         except ExpatError:
             # Some devices seem to produce corrupt data
             pass
