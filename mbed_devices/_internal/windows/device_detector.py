@@ -31,7 +31,7 @@ class WindowsDeviceDetector(DeviceDetector):
         return CandidateDevice(
             product_id=uid.product_id,
             vendor_id=uid.vendor_id,
-            mount_points=[Path(disk.component_id) for disk in usb_data.get("disks")],
+            mount_points=tuple(Path(disk.component_id) for disk in usb_data.get("disks")),
             serial_number=uid.uid.presumed_serial_number,
             serial_port=serial_port.port_name if serial_port else None,
         )

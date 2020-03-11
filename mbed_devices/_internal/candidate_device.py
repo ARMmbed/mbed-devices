@@ -1,7 +1,6 @@
 """Defines CandidateDevice model used for device detection."""
-import functools
-
-from typing import Optional, List, Any, Sequence
+from dataclasses import dataclass
+from typing import Optional, Tuple, Any, Union, cast
 from pathlib import Path
 
 
@@ -54,67 +53,34 @@ class USBDescriptorString(DataField):
 class FilesystemMountpoints(DataField):
     """Data descriptor which must be set to a non-empty list or tuple."""
 
-    def __set__(self, instance: object, value: Sequence) -> None:
+    def __set__(self, instance: object, value: Union[tuple, list]) -> None:
         """Prevent setting the descriptor to a non-sequence or empty sequence value."""
         if not value or not isinstance(value, (list, tuple)):
             raise FilesystemMountpointError(f"{self.name} must be set to a non-empty list or tuple.")
 
-        instance.__dict__[self.name] = value
+        instance.__dict__[self.name] = tuple(value)
 
 
-@functools.total_ordering
+@dataclass(frozen=True, order=True)
 class CandidateDevice:
     """Valid candidate device connected to the host computer.
 
-    We know for a fact that a valid candidate contains certain non-empty fields.
+    We define a CandidateDevice as any USB mass storage device which mounts a filesystem.
+    The device may or may not present a serial port.
+
+    Attributes:
+        product_id: USB device product ID.
+        vendor_id: USB device vendor ID.
+        serial_number: USB device serial number.
+        mount_points: Filesystem mount points associated with the device.
+        serial_port: Serial port associated with the device, this could be None.
     """
 
-    product_id = USBDescriptorHex()
-    vendor_id = USBDescriptorHex()
-    serial_number = USBDescriptorString()
-    mount_points = FilesystemMountpoints()
-
-    def __init__(
-        self,
-        product_id: str,
-        vendor_id: str,
-        mount_points: List[Path],
-        serial_number: str,
-        serial_port: Optional[str] = None,
-    ) -> None:
-        """Validate given values and return a CandidateDevice."""
-        self.product_id = product_id
-        self.vendor_id = vendor_id
-        self.serial_number = serial_number
-        self.mount_points = mount_points
-        self.serial_port = serial_port
-
-    def __eq__(self, other: object) -> bool:
-        """Compare two candidates based on the value of their required attributes."""
-        if not isinstance(other, CandidateDevice):
-            return NotImplemented
-
-        return (self.serial_number, self.vendor_id, self.product_id) == (
-            other.serial_number,
-            other.vendor_id,
-            other.product_id,
-        )
-
-    def __lt__(self, other: object) -> Any:
-        """Define < so object is sortable by serial number."""
-        if not isinstance(other, CandidateDevice):
-            return NotImplemented
-
-        return self.serial_number < other.serial_number
-
-    def __hash__(self) -> int:
-        """Create a hash consistent with the equality comparison operator."""
-        return hash(self.serial_number) ^ hash(self.vendor_id) ^ hash(self.product_id)
-
-    def __repr__(self) -> str:
-        """Namedtuple-like representation of the instance."""
-        values = [f"{k}={v!r}" for (k, v) in self.__dict__.items()]
-        return f"CandidateDevice({', '.join(values)})"
+    product_id: str = cast(str, USBDescriptorHex())
+    vendor_id: str = cast(str, USBDescriptorHex())
+    serial_number: str = cast(str, USBDescriptorString())
+    mount_points: Tuple[Path, ...] = cast(Tuple[Path], FilesystemMountpoints())
+    serial_port: Optional[str] = None
 
 
 def _format_hex(hex_value: str) -> str:

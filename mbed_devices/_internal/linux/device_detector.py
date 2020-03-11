@@ -1,7 +1,7 @@
 """Defines a device detector for Linux."""
 import logging
 from pathlib import Path
-from typing import List, Optional, cast
+from typing import Tuple, List, Optional, cast
 
 import psutil
 import pyudev
@@ -51,6 +51,6 @@ def _find_serial_port_for_device(disk_serial_id: str) -> Optional[str]:
     return None
 
 
-def _find_fs_mounts_for_device(device_file_path: str) -> List[Path]:
+def _find_fs_mounts_for_device(device_file_path: str) -> Tuple[Path, ...]:
     """Find the file system mount point for a block device file path."""
-    return [Path(part.mountpoint) for part in psutil.disk_partitions() if part.device == device_file_path]
+    return tuple(Path(part.mountpoint) for part in psutil.disk_partitions() if part.device == device_file_path)

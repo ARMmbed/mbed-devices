@@ -64,9 +64,9 @@ class TestListConnectedDevices(TestCase):
 
 class TestSortDevicesByName(TestCase):
     def test_sorts_devices_by_mbed_target_board_name(self):
-        device_1 = mock.Mock(spec_set=Device, mbed_target=mock.Mock(spec_set=MbedTarget, board_name="A"))
-        device_2 = mock.Mock(spec_set=Device, mbed_target=mock.Mock(spec_set=MbedTarget, board_name="B"))
-        device_3 = mock.Mock(spec_set=Device, mbed_target=mock.Mock(spec_set=MbedTarget, board_name="C"))
+        device_1 = mock.create_autospec(Device, mbed_target=mock.create_autospec(MbedTarget, board_name="A"))
+        device_2 = mock.create_autospec(Device, mbed_target=mock.create_autospec(MbedTarget, board_name="B"))
+        device_3 = mock.create_autospec(Device, mbed_target=mock.create_autospec(MbedTarget, board_name="C"))
 
         result = _sort_devices_by_name([device_3, device_1, device_2])
 
@@ -76,8 +76,8 @@ class TestSortDevicesByName(TestCase):
 class TestBuildTableOutput(TestCase):
     def test_returns_tabularised_representation_of_devices(self):
         device = Device(
-            mbed_target=mock.Mock(
-                spec_set=MbedTarget, board_name="board-name", build_variant=("S", "NS"), board_type="board-type",
+            mbed_target=mock.create_autospec(
+                MbedTarget, board_name="board-name", build_variant=("S", "NS"), board_type="board-type",
             ),
             serial_number="serial-number",
             serial_port="serial-port",
@@ -100,9 +100,9 @@ class TestBuildTableOutput(TestCase):
         )
         self.assertEqual(output, expected_output)
 
-    def test_displays_unknown_values(self):
+    def test_displays_unknown_serial_port_value(self):
         device = Device(
-            mbed_target=MbedTarget({}),
+            mbed_target=MbedTarget.from_target_entry({}),
             serial_number="serial",
             serial_port=None,
             mount_points=[pathlib.Path("somepath")],
@@ -127,8 +127,8 @@ class TestBuildTableOutput(TestCase):
 
 class TestBuildJsonOutput(TestCase):
     def test_returns_json_representation_of_devices(self):
-        mbed_target = mock.Mock(
-            spec_set=MbedTarget,
+        mbed_target = mock.create_autospec(
+            MbedTarget,
             product_code="0021",
             board_type="HAT-BOAT",
             board_name="HAT Boat",
@@ -167,7 +167,9 @@ class TestBuildJsonOutput(TestCase):
 
     def test_empty_values_keys_are_always_present(self):
         """Asserts that keys are present even if value is None."""
-        device = Device(mbed_target=MbedTarget({}), serial_number="foo", serial_port=None, mount_points=[],)
+        device = Device(
+            mbed_target=MbedTarget.from_target_entry({}), serial_number="foo", serial_port=None, mount_points=[],
+        )
 
         output = json.loads(_build_json_output([device]))
 
@@ -176,6 +178,6 @@ class TestBuildJsonOutput(TestCase):
 
 class TestGetBuildTargets(TestCase):
     def test_returns_base_target_and_all_variants(self):
-        mbed_target = mock.Mock(spec_set=MbedTarget, build_variant=("S", "NS"), board_type="FOO")
+        mbed_target = mock.create_autospec(MbedTarget, build_variant=("S", "NS"), board_type="FOO")
 
         self.assertEqual(_get_build_targets(mbed_target), ["FOO_S", "FOO_NS", "FOO"])
