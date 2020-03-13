@@ -2,10 +2,9 @@
 
 Filesystem access is slow - this module does its best to do it lazily.
 """
-import functools
 import itertools
 import pathlib
-from typing import Callable, Iterable, List
+from typing import Iterable, List, Optional
 from mbed_targets import MbedTarget, UnknownTarget, get_target_by_product_code, get_target_by_online_id
 
 from mbed_devices._internal.htm_file import OnlineId, read_online_id, read_product_code
@@ -17,64 +16,57 @@ class NoTargetForCandidate(Exception):
 
 
 def resolve_target(candidate: CandidateDevice) -> MbedTarget:
-    """Resolves target for given CandidateDevice if possible.
+    """Resolves target for a given CandidateDevice.
 
-    Currently, the mechanism for resolving targets relies on existence of HTM files in devices mass storage.
-    The specification of those HTM files is that they redirect to devices product page on os.mbed.com.
+    This function interrogates CandidateDevice, attempting to establish the best method to resolve an MbedTarget,
+    the rules are as follows:
+
+    1. Use product code retrieved from one of HTM files in the mass storage if available.
+    2. Use online id retrieved from one of the HTM files in the mass storage if available.
+    3. Fallback to product code retrieved from serial number.
+
+    The specification of HTM files is that they redirect to devices product page on os.mbed.com.
     Information about Mbed Enabled requirements: https://www.mbed.com/en/about-mbed/mbed-enabled/requirements/
     """
-    try:
-        target_resolver = _build_target_resolver(candidate)
-    except UnableToBuildResolver:
-        raise NoTargetForCandidate
+    all_files_contents = _get_all_htm_files_contents(candidate.mount_points)
 
+    product_code = _extract_product_code(all_files_contents)
+    if product_code:
+        try:
+            return get_target_by_product_code(product_code)
+        except UnknownTarget:
+            raise NoTargetForCandidate
+
+    online_id = _extract_online_id(all_files_contents)
+    if online_id:
+        try:
+            return get_target_by_online_id(slug=online_id.device_slug, target_type=online_id.device_type)
+        except UnknownTarget:
+            raise NoTargetForCandidate
+
+    # Product code might be the first 4 characters of the serial number
     try:
-        return target_resolver()
+        return get_target_by_product_code(candidate.serial_number[:4])
     except UnknownTarget:
         raise NoTargetForCandidate
 
 
-class UnableToBuildResolver(Exception):
-    """Raised when theres not enough information on the candidate to build a target resolver."""
-
-
-def _build_target_resolver(candidate: CandidateDevice) -> Callable:
-    all_files_contents = _get_all_htm_files_contents(candidate.mount_points)
-    try:
-        product_code = _extract_product_code(all_files_contents)
-        return functools.partial(get_target_by_product_code, product_code)
-    except ProductCodeNotFound:
-        pass
-
-    try:
-        online_id = _extract_online_id(all_files_contents)
-        return functools.partial(get_target_by_online_id, slug=online_id.device_slug, target_type=online_id.device_type)
-    except OnlineIdNotFound:
-        raise UnableToBuildResolver
-
-
-class ProductCodeNotFound(Exception):
-    """Raised when product code is not found in htm files."""
-
-
-def _extract_product_code(all_files_contents: Iterable[str]) -> str:
+def _extract_product_code(all_files_contents: Iterable[str]) -> Optional[str]:
+    """Return first product code found in files contents, None if not found."""
     for contents in all_files_contents:
         product_code = read_product_code(contents)
         if product_code:
             return product_code
-    raise ProductCodeNotFound
+    return None
 
 
-class OnlineIdNotFound(Exception):
-    """Raised when online id is not found in htm files."""
-
-
-def _extract_online_id(all_files_contents: Iterable[str]) -> OnlineId:
+def _extract_online_id(all_files_contents: Iterable[str]) -> Optional[OnlineId]:
+    """Return first online id found in files contents, None if not found."""
     for contents in all_files_contents:
         online_id = read_online_id(contents)
         if online_id:
             return online_id
-    raise OnlineIdNotFound
+    return None
 
 
 def _get_all_htm_files_contents(directories: Iterable[pathlib.Path]) -> List[str]:

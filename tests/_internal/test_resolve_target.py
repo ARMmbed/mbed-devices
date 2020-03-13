@@ -6,87 +6,102 @@ from mbed_targets import UnknownTarget
 from tests.factories import CandidateDeviceFactory
 from mbed_devices._internal.htm_file import OnlineId
 from mbed_devices._internal.resolve_target import (
-    UnableToBuildResolver,
     NoTargetForCandidate,
     _get_all_htm_files_contents,
     resolve_target,
-    _build_target_resolver,
 )
 
 
-@mock.patch("mbed_devices._internal.resolve_target._build_target_resolver")
-class TestResolveTarget(TestCase):
-    def test_returns_target_resolved_using_built_target_resolver(self, _build_target_resolver):
+@mock.patch(
+    "mbed_devices._internal.resolve_target._get_all_htm_files_contents",
+    autospec=True,
+    return_value=["some file contents"],
+)
+@mock.patch("mbed_devices._internal.resolve_target.read_product_code", autospec=True)
+@mock.patch("mbed_devices._internal.resolve_target.get_target_by_product_code", autospec=True)
+class TestResolveTargetUsingProductCodeFromHTM(TestCase):
+    def test_returns_resolved_target(self, get_target_by_product_code, read_product_code, _get_all_htm_files_contents):
+        read_product_code.return_value = "0123"
         candidate = CandidateDeviceFactory()
 
         subject = resolve_target(candidate)
 
-        self.assertEqual(subject, _build_target_resolver.return_value.return_value)
-        _build_target_resolver.assert_called_once_with(candidate)
-
-    def test_raises_when_resolver_cannot_be_built(self, _build_target_resolver):
-        _build_target_resolver.side_effect = UnableToBuildResolver
-        candidate = CandidateDeviceFactory()
-
-        with self.assertRaises(NoTargetForCandidate):
-            resolve_target(candidate)
-
-    def test_raises_when_target_cannot_be_resolved(self, _build_target_resolver):
-        resolver = mock.Mock(side_effect=UnknownTarget)
-        _build_target_resolver.return_value = resolver
-        candidate = CandidateDeviceFactory()
-
-        with self.assertRaises(NoTargetForCandidate):
-            resolve_target(candidate)
-
-
-@mock.patch("mbed_devices._internal.resolve_target._get_all_htm_files_contents")
-class TestBuildTargetResolver(TestCase):
-    @mock.patch("mbed_devices._internal.resolve_target.read_product_code")
-    @mock.patch("mbed_devices._internal.resolve_target.get_target_by_product_code")
-    def test_will_resolve_targets_using_product_code_when_available(
-        self, get_target_by_product_code, read_product_code, _get_all_htm_files_contents
-    ):
-        _get_all_htm_files_contents.return_value = ["file contents"]
-        read_product_code.return_value = "0123"
-        candidate = CandidateDeviceFactory()
-
-        subject = _build_target_resolver(candidate)()
-
         self.assertEqual(subject, get_target_by_product_code.return_value)
         get_target_by_product_code.assert_called_once_with(read_product_code.return_value)
-        read_product_code.assert_called_once_with("file contents")
+        read_product_code.assert_called_once_with(_get_all_htm_files_contents.return_value[0])
         _get_all_htm_files_contents.assert_called_once_with(candidate.mount_points)
 
-    @mock.patch("mbed_devices._internal.resolve_target.read_product_code")
-    @mock.patch("mbed_devices._internal.resolve_target.read_online_id")
-    @mock.patch("mbed_devices._internal.resolve_target.get_target_by_online_id")
-    def test_will_resolve_targets_using_online_id_when_available(
+    def test_raises_when_target_not_found(
+        self, get_target_by_product_code, read_product_code, _get_all_htm_files_contents
+    ):
+        read_product_code.return_value = "1234"
+        get_target_by_product_code.side_effect = UnknownTarget
+        candidate = CandidateDeviceFactory()
+
+        with self.assertRaises(NoTargetForCandidate):
+            resolve_target(candidate)
+
+
+@mock.patch(
+    "mbed_devices._internal.resolve_target._get_all_htm_files_contents",
+    autospec=True,
+    return_value=["other file contents"],
+)
+@mock.patch("mbed_devices._internal.resolve_target.read_product_code", autospec=True, return_value=None)
+@mock.patch("mbed_devices._internal.resolve_target.read_online_id", autospec=True)
+@mock.patch("mbed_devices._internal.resolve_target.get_target_by_online_id", autospec=True)
+class TestResolveTargetUsingOnlineIdFromHTM(TestCase):
+    def test_returns_resolved_target(
         self, get_target_by_online_id, read_online_id, read_product_code, _get_all_htm_files_contents
     ):
-        _get_all_htm_files_contents.return_value = ["some file contents"]
         online_id = OnlineId(device_type="hat", device_slug="boat")
-        read_product_code.return_value = None
         read_online_id.return_value = online_id
         candidate = CandidateDeviceFactory()
 
-        subject = _build_target_resolver(candidate)()
+        subject = resolve_target(candidate)
 
         self.assertEqual(subject, get_target_by_online_id.return_value)
-        read_online_id.assert_called_with("some file contents")
+        read_online_id.assert_called_with(_get_all_htm_files_contents.return_value[0])
         get_target_by_online_id.assert_called_once_with(slug=online_id.device_slug, target_type=online_id.device_type)
 
-    @mock.patch("mbed_devices._internal.resolve_target.read_product_code")
-    @mock.patch("mbed_devices._internal.resolve_target.read_online_id")
-    def test_raises_when_no_information_found_on_candidate(
-        self, read_product_code, read_online_id, _get_all_htm_files_contents
+    def test_raises_when_target_not_found(
+        self, get_target_by_online_id, read_online_id, read_product_code, _get_all_htm_files_contents
     ):
-        _get_all_htm_files_contents.return_value = ["foo"]
-        read_product_code.return_value = None
-        read_online_id.return_value = None
+        read_online_id.return_value = OnlineId(device_type="hat", device_slug="boat")
+        get_target_by_online_id.side_effect = UnknownTarget
+        candidate = CandidateDeviceFactory()
 
-        with self.assertRaises(UnableToBuildResolver):
-            _build_target_resolver(CandidateDeviceFactory())()
+        with self.assertRaises(NoTargetForCandidate):
+            resolve_target(candidate)
+
+
+@mock.patch(
+    "mbed_devices._internal.resolve_target._get_all_htm_files_contents",
+    autospec=True,
+    return_value=["who knows file contents"],
+)
+@mock.patch("mbed_devices._internal.resolve_target.read_product_code", autospec=True, return_value=None)
+@mock.patch("mbed_devices._internal.resolve_target.read_online_id", autospec=True, return_value=None)
+@mock.patch("mbed_devices._internal.resolve_target.get_target_by_product_code", autospec=True)
+class TestResolveTargetUsingProductCodeFromSerial(TestCase):
+    def test_resolves_targets_using_product_code_when_available(
+        self, get_target_by_product_code, read_online_id, read_product_code, _get_all_htm_files_contents
+    ):
+        candidate = CandidateDeviceFactory()
+
+        subject = resolve_target(candidate)
+
+        self.assertEqual(subject, get_target_by_product_code.return_value)
+        get_target_by_product_code.assert_called_once_with(candidate.serial_number[:4])
+
+    def test_raises_when_target_not_found(
+        self, get_target_by_product_code, read_online_id, read_product_code, _get_all_htm_files_contents
+    ):
+        get_target_by_product_code.side_effect = UnknownTarget
+        candidate = CandidateDeviceFactory()
+
+        with self.assertRaises(NoTargetForCandidate):
+            resolve_target(candidate)
 
 
 class TestGetAllHtmFilesContents(TestCase):
