@@ -28,32 +28,32 @@ stages:
           matrix:
             Linux_Py_3_6:
               python.version: '3.6'
-              vmImageName: ubuntu-18.04
+              vmImageName: ubuntu-latest
               uploadCoverage: "false"
 
             Linux_Py_3_7:
               python.version: '3.7'
-              vmImageName: ubuntu-18.04
+              vmImageName: ubuntu-latest
               uploadCoverage: "true"
 
             Windows_Py_3_6:
               python.version: '3.6'
-              vmImageName: windows-2019
+              vmImageName: windows-latest
               uploadCoverage: "false"
 
             Windows_Py_3_7:
               python.version: '3.7'
-              vmImageName: windows-2019
+              vmImageName: windows-latest
               uploadCoverage: "true"
 
             macOS_Py_3_6:
               python.version: '3.6'
-              vmImageName: macOS-10.14
+              vmImageName: macOS-latest
               uploadCoverage: "false"
 
             macOS_Py_3_7:
               python.version: '3.7'
-              vmImageName: macOS-10.14
+              vmImageName: macOS-latest
               uploadCoverage: "true"
         pool:
           vmImage: $(vmImageName)
@@ -136,8 +136,8 @@ stages:
     displayName: 'CI Checkpoint'
     dependsOn:
       - AnalyseTest
-      - DocBuild
       - AssertNews
+      - DocBuild
     jobs:
       - job: ChecksPassing
         displayName: 'Checks Passing'
