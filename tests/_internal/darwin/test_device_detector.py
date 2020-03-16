@@ -93,7 +93,7 @@ class TestGetMountPoints(TestCase):
         diskutil.get_mount_point.side_effect = ["/Volumes/Disk1", "/Volumes/Disk2"]
 
         self.assertEqual(
-            _get_mount_points(device_data), [pathlib.Path("/Volumes/Disk1"), pathlib.Path("/Volumes/Disk2")]
+            _get_mount_points(device_data), (pathlib.Path("/Volumes/Disk1"), pathlib.Path("/Volumes/Disk2"))
         )
         diskutil.get_mount_point.assert_has_calls([mock.call("disk1"), mock.call("disk2")])
 

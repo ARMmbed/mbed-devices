@@ -2,7 +2,7 @@
 import logging
 import pathlib
 import re
-from typing import List, Optional
+from typing import List, Tuple, Optional
 from typing_extensions import TypedDict
 from mbed_devices._internal.base_detector import DeviceDetector
 from mbed_devices._internal.candidate_device import CandidateDevice
@@ -18,7 +18,7 @@ class CandidateDeviceData(TypedDict):
     vendor_id: str
     product_id: str
     serial_number: str
-    mount_points: List[pathlib.Path]
+    mount_points: Tuple[pathlib.Path, ...]
     serial_port: Optional[str]
 
 
@@ -75,7 +75,7 @@ def _format_vendor_id(vendor_id: str) -> str:
     return vendor_id.split(maxsplit=1)[0]
 
 
-def _get_mount_points(device_data: system_profiler.USBDevice) -> List[pathlib.Path]:
+def _get_mount_points(device_data: system_profiler.USBDevice) -> Tuple[pathlib.Path, ...]:
     """Returns mount points for a given device, empty list if device has no mount points."""
     storage_identifiers = [media["bsd_name"] for media in device_data.get("Media", []) if "bsd_name" in media]
     mount_points = []
@@ -85,7 +85,7 @@ def _get_mount_points(device_data: system_profiler.USBDevice) -> List[pathlib.Pa
             mount_points.append(pathlib.Path(mount_point))
         else:
             logging.debug(f"Couldn't determine mount point for device id: {storage_identifier}.")
-    return mount_points
+    return tuple(mount_points)
 
 
 def _get_serial_port(device_data: system_profiler.USBDevice) -> Optional[str]:

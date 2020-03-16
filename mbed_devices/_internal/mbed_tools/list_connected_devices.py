@@ -1,4 +1,4 @@
-"""Entry point for mbed-tools cli."""
+"""List all devices cli command."""
 import click
 import json
 from operator import attrgetter
@@ -13,7 +13,7 @@ from mbed_targets import MbedTarget
 @click.option(
     "--format", type=click.Choice(["table", "json"]), default="table", show_default=True, help="Set output format."
 )
-def list_connected_devices(format):
+def list_connected_devices(format: str) -> None:
     """Prints connected devices."""
     devices = _sort_devices_by_name(get_connected_devices())
     output_builders = {
@@ -25,9 +25,6 @@ def list_connected_devices(format):
         click.echo(output)
     else:
         click.echo("No connected Mbed devices found.")
-
-
-cli = list_connected_devices
 
 
 def _sort_devices_by_name(devices: Iterable[Device]) -> Iterable[Device]:

@@ -6,7 +6,9 @@ from tests.markers import windows_only
 
 
 def generateUID() -> WindowsUID:
-    return WindowsUID(uid=str(uuid.uuid4()), raw_uid=f"/{uuid.uuid4()}&001", serial_number=str(random.randint(1, 100)))
+    return WindowsUID(
+        uid=str(uuid.uuid4()), raw_uid=f"/{uuid.uuid4()}&001", serial_number=f"SN{str(uuid.uuid4()).replace('-','')}"
+    )
 
 
 @windows_only

@@ -44,6 +44,7 @@ setup(
         "pyudev; platform_system=='Linux'",
         "typing-extensions",
         "tabulate",
+        "dataclasses; python_version<'3.7'",
     ],
     license="Apache 2.0",
     long_description_content_type="text/markdown",

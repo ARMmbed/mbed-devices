@@ -72,34 +72,26 @@ class OnlineId(NamedTuple):
     device_slug: str
 
 
-class HTMFileContentsParser:
-    """Extracts information from MBED.HTM file contents."""
-
-    def __init__(self, file_contents: str) -> None:
-        """Initialises HTMFileContentsParser with file contents."""
-        self._file_contents = file_contents
-
-    @property
-    def product_code(self) -> Optional[str]:
-        """Returns product code parsed from the file contents, None if not found."""
-        regex = r"""
+def read_product_code(file_contents: str) -> Optional[str]:
+    """Returns product code parsed from the file contents, None if not found."""
+    regex = r"""
             (?:code|auth)=                   # attribute name
             (?P<product_code>[a-fA-F0-9]{4}) # product code
-        """
-        match = re.search(regex, self._file_contents, re.VERBOSE)
-        if match:
-            return match["product_code"]
-        return None
+    """
+    match = re.search(regex, file_contents, re.VERBOSE)
+    if match:
+        return match["product_code"]
+    return None
 
-    @property
-    def online_id(self) -> Optional[OnlineId]:
-        """Returns online id parsed from the files contents, None if not found."""
-        regex = r"""
+
+def read_online_id(file_contents: str) -> Optional[OnlineId]:
+    """Returns online id parsed from the files contents, None if not found."""
+    regex = r"""
             (?P<device_type>module|platform)s  # module|platform
             \/                                 # forward slash in the url
             (?P<device_slug>[-\w]+)            # permitted characters in a slug are letters and digits
-        """
-        match = re.search(regex, self._file_contents, re.VERBOSE)
-        if match:
-            return OnlineId(device_type=match["device_type"], device_slug=match["device_slug"])
-        return None
+    """
+    match = re.search(regex, file_contents, re.VERBOSE)
+    if match:
+        return OnlineId(device_type=match["device_type"], device_slug=match["device_slug"])
+    return None
