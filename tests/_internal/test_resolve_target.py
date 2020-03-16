@@ -1,7 +1,7 @@
 import pathlib
 from pyfakefs.fake_filesystem_unittest import Patcher
 from unittest import TestCase, mock
-from mbed_targets import UnknownTarget
+from mbed_targets.exceptions import UnknownTarget
 
 from tests.factories import CandidateDeviceFactory
 from mbed_devices._internal.htm_file import OnlineId

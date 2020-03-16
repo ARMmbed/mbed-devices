@@ -1,18 +1,21 @@
-"""Resolve targets for CandidateDevice.
+"""Resolve targets for `CandidateDevice`.
 
-Filesystem access is slow - this module does its best to do it lazily.
+Resolving a target involves looking up an `MbedTarget` from the `mbed-targets` API, using data found in the "htm file"
+located on an "Mbed Enabled" device's USB MSD.
+
+For more information on the mbed-targets package visit https://github.com/ARMmbed/mbed-targets
 """
 import itertools
 import pathlib
+
 from typing import Iterable, List, Optional
-from mbed_targets import MbedTarget, UnknownTarget, get_target_by_product_code, get_target_by_online_id
+
+from mbed_targets import MbedTarget, get_target_by_product_code, get_target_by_online_id
+from mbed_targets.exceptions import UnknownTarget
 
 from mbed_devices._internal.htm_file import OnlineId, read_online_id, read_product_code
 from mbed_devices._internal.candidate_device import CandidateDevice
-
-
-class NoTargetForCandidate(Exception):
-    """Raised when target cannot be determined for a candidate."""
+from mbed_devices._internal.exceptions import NoTargetForCandidate
 
 
 def resolve_target(candidate: CandidateDevice) -> MbedTarget:

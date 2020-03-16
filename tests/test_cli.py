@@ -102,7 +102,7 @@ class TestBuildTableOutput(TestCase):
 
     def test_displays_unknown_serial_port_value(self):
         device = Device(
-            mbed_target=MbedTarget.from_target_entry({}),
+            mbed_target=MbedTarget.from_offline_target_entry({}),
             serial_number="serial",
             serial_port=None,
             mount_points=[pathlib.Path("somepath")],
@@ -168,7 +168,10 @@ class TestBuildJsonOutput(TestCase):
     def test_empty_values_keys_are_always_present(self):
         """Asserts that keys are present even if value is None."""
         device = Device(
-            mbed_target=MbedTarget.from_target_entry({}), serial_number="foo", serial_port=None, mount_points=[],
+            mbed_target=MbedTarget.from_offline_target_entry({}),
+            serial_number="foo",
+            serial_port=None,
+            mount_points=[],
         )
 
         output = json.loads(_build_json_output([device]))
