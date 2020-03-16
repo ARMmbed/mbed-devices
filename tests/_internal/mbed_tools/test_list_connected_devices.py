@@ -5,8 +5,7 @@ from mbed_targets import MbedTarget
 from tabulate import tabulate
 from unittest import TestCase, mock
 
-from mbed_devices.mbed_tools.cli import (
-    cli,
+from mbed_devices._internal.mbed_tools.list_connected_devices import (
     list_connected_devices,
     _build_tabular_output,
     _build_json_output,
@@ -16,12 +15,7 @@ from mbed_devices.mbed_tools.cli import (
 from mbed_devices import Device
 
 
-class TestCli(TestCase):
-    def test_aliases_list_connected_devices(self):
-        self.assertEqual(cli, list_connected_devices)
-
-
-@mock.patch("mbed_devices.mbed_tools.cli.get_connected_devices")
+@mock.patch("mbed_devices._internal.mbed_tools.list_connected_devices.get_connected_devices")
 class TestListConnectedDevices(TestCase):
     def test_informs_when_no_devices_are_connected(self, get_connected_devices):
         get_connected_devices.return_value = []
@@ -31,8 +25,8 @@ class TestListConnectedDevices(TestCase):
         self.assertEqual(result.exit_code, 0)
         self.assertIn("No connected Mbed devices found.", result.output)
 
-    @mock.patch("mbed_devices.mbed_tools.cli._sort_devices_by_name")
-    @mock.patch("mbed_devices.mbed_tools.cli._build_tabular_output")
+    @mock.patch("mbed_devices._internal.mbed_tools.list_connected_devices._sort_devices_by_name")
+    @mock.patch("mbed_devices._internal.mbed_tools.list_connected_devices._build_tabular_output")
     def test_by_default_lists_devices_using_tabular_output(
         self, _build_tabular_output, _sort_devices_by_name, get_connected_devices
     ):
@@ -46,8 +40,8 @@ class TestListConnectedDevices(TestCase):
         _build_tabular_output.assert_called_once_with(_sort_devices_by_name.return_value)
         _sort_devices_by_name.assert_called_once_with(get_connected_devices.return_value)
 
-    @mock.patch("mbed_devices.mbed_tools.cli._sort_devices_by_name")
-    @mock.patch("mbed_devices.mbed_tools.cli._build_json_output")
+    @mock.patch("mbed_devices._internal.mbed_tools.list_connected_devices._sort_devices_by_name")
+    @mock.patch("mbed_devices._internal.mbed_tools.list_connected_devices._build_json_output")
     def test_given_json_flag_lists_devices_using_json_output(
         self, _build_json_output, _sort_devices_by_name, get_connected_devices
     ):
