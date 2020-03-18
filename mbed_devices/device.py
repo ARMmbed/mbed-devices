@@ -1,4 +1,4 @@
-"""Device model definition."""
+"""Device data model definition."""
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Tuple, Optional
