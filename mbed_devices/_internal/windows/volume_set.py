@@ -1,3 +1,7 @@
+#
+# Copyright (C) 2020 Arm Mbed. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
 """Defines a Volume Set.
 
 CIM_VolumeSet should be the data model to use but does not seem to actually return the data that we are looking for:

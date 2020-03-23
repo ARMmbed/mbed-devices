@@ -1,3 +1,7 @@
+#
+# Copyright (C) 2020 Arm Mbed. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
 """Resolve targets for `CandidateDevice`.
 
 Resolving a target involves looking up an `MbedTarget` from the `mbed-targets` API, using data found in the "htm file"

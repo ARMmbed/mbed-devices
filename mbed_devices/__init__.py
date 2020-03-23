@@ -1,3 +1,7 @@
+#
+# Copyright (C) 2020 Arm Mbed. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
 """mbed-devices provides an API to detect any Mbed OS devices connected to the host computer.
 
 It is expected that this package will be used by developers of Mbed OS tooling rather than by users of Mbed OS.

@@ -1,3 +1,7 @@
+#
+# Copyright (C) 2020 Arm Mbed. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
 """Facilitates parsing MBED.HTM files found on the Mbed devices.
 
 For legacy reasons, we support many flavours of MBED.HTM files. The list of examples below is not exhaustive,

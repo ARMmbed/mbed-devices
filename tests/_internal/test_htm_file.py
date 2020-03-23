@@ -1,3 +1,7 @@
+#
+# Copyright (C) 2020 Arm Mbed. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
 from unittest import TestCase
 
 from mbed_devices._internal.htm_file import read_product_code, read_online_id, OnlineId

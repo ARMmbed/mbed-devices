@@ -1,3 +1,7 @@
+#
+# Copyright (C) 2020 Arm Mbed. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
 from unittest import TestCase
 from mbed_devices._internal.windows.component_descriptor_utils import data_object_to_dict
 from mbed_devices._internal.windows.windows_identifier import WindowsUID

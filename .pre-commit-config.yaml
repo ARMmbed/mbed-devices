@@ -1,5 +1,13 @@
 - repo: local
   hooks:
+  - id: licensing
+    name: licensing
+    entry: license-files
+    language: python
+    types: [file]
+    require_serial: true
+    verbose: true
+
   - id: black
     name: black
     entry: black
@@ -16,7 +24,7 @@
 
   - id: mypy
     name: mypy
-    entry: mypy -p {{ cookiecutter.python_module_name }}
+    entry: mypy -p mbed_devices
     language: python
     types: [python]
     require_serial: true

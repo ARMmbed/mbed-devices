@@ -1,3 +1,7 @@
+#
+# Copyright (C) 2020 Arm Mbed. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
 """Aggregation of all USB data given by Windows in various locations."""
 from typing import NamedTuple, List, cast
 
