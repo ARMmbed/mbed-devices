@@ -58,7 +58,7 @@ class TestResolveTargetUsingOnlineIdFromHTM(TestCase):
     def test_returns_resolved_target(
         self, get_target_by_online_id, read_online_id, read_product_code, _get_all_htm_files_contents
     ):
-        online_id = OnlineId(device_type="hat", device_slug="boat")
+        online_id = OnlineId(target_type="hat", slug="boat")
         read_online_id.return_value = online_id
         candidate = CandidateDeviceFactory()
 
@@ -66,12 +66,12 @@ class TestResolveTargetUsingOnlineIdFromHTM(TestCase):
 
         self.assertEqual(subject, get_target_by_online_id.return_value)
         read_online_id.assert_called_with(_get_all_htm_files_contents.return_value[0])
-        get_target_by_online_id.assert_called_once_with(slug=online_id.device_slug, target_type=online_id.device_type)
+        get_target_by_online_id.assert_called_once_with(target_type=online_id.target_type, slug=online_id.slug)
 
     def test_raises_when_target_not_found(
         self, get_target_by_online_id, read_online_id, read_product_code, _get_all_htm_files_contents
     ):
-        read_online_id.return_value = OnlineId(device_type="hat", device_slug="boat")
+        read_online_id.return_value = OnlineId(target_type="hat", slug="boat")
         get_target_by_online_id.side_effect = UnknownTarget
         candidate = CandidateDeviceFactory()
 

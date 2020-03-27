@@ -69,11 +69,13 @@ from typing import Optional, NamedTuple
 class OnlineId(NamedTuple):
     """Used to identify the target against the os.mbed.com website.
 
-    OnlineId(device_type="platform", slug="SOME-SLUG") -> https://os.mbed.com/platforms/SOME-SLUG
+    The target type and slug are used in the URI for the board and together they can be used uniquely identify a board.
+
+    OnlineId(target_type="platform", slug="SOME-SLUG") -> https://os.mbed.com/platforms/SOME-SLUG
     """
 
-    device_type: str
-    device_slug: str
+    target_type: str
+    slug: str
 
 
 def read_product_code(file_contents: str) -> Optional[str]:
@@ -91,11 +93,11 @@ def read_product_code(file_contents: str) -> Optional[str]:
 def read_online_id(file_contents: str) -> Optional[OnlineId]:
     """Returns online id parsed from the files contents, None if not found."""
     regex = r"""
-            (?P<device_type>module|platform)s  # module|platform
+            (?P<target_type>module|platform)s  # module|platform
             \/                                 # forward slash in the url
-            (?P<device_slug>[-\w]+)            # permitted characters in a slug are letters and digits
+            (?P<slug>[-\w]+)            # permitted characters in a slug are letters and digits
     """
     match = re.search(regex, file_contents, re.VERBOSE)
     if match:
-        return OnlineId(device_type=match["device_type"], device_slug=match["device_slug"])
+        return OnlineId(target_type=match["target_type"], slug=match["slug"])
     return None
