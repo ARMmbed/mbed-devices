@@ -10,7 +10,9 @@ located on an "Mbed Enabled" device's USB MSD.
 For more information on the mbed-targets package visit https://github.com/ARMmbed/mbed-targets
 """
 import itertools
+import logging
 import pathlib
+import os
 
 from typing import Iterable, List, Optional
 
@@ -20,6 +22,9 @@ from mbed_targets.exceptions import UnknownTarget
 from mbed_devices._internal.htm_file import OnlineId, read_online_id, read_product_code
 from mbed_devices._internal.candidate_device import CandidateDevice
 from mbed_devices._internal.exceptions import NoTargetForCandidate
+
+
+logger = logging.getLogger(__name__)
 
 
 def resolve_target(candidate: CandidateDevice) -> MbedTarget:
@@ -42,19 +47,29 @@ def resolve_target(candidate: CandidateDevice) -> MbedTarget:
         try:
             return get_target_by_product_code(product_code)
         except UnknownTarget:
+            logger.error(f"Could not identify an Mbed Target with the Product Code: '{product_code}'.")
             raise NoTargetForCandidate
 
     online_id = _extract_online_id(all_files_contents)
     if online_id:
+        slug = online_id.slug
+        target_type = online_id.target_type
         try:
-            return get_target_by_online_id(slug=online_id.device_slug, target_type=online_id.device_type)
+            return get_target_by_online_id(slug=slug, target_type=target_type)
         except UnknownTarget:
+            logger.error(f"Could not identify an Mbed Target with the Slug: '{slug}' and Target Type '{target_type}'.")
             raise NoTargetForCandidate
 
     # Product code might be the first 4 characters of the serial number
     try:
-        return get_target_by_product_code(candidate.serial_number[:4])
+        product_code = candidate.serial_number[:4]
+        return get_target_by_product_code(product_code)
     except UnknownTarget:
+        # Most devices have a serial number so this may not be a problem
+        logger.info(
+            f"The device with the Serial Number: '{candidate.serial_number}' (Product Code: '{product_code}') "
+            f"does not appear to be an Mbed Target ."
+        )
         raise NoTargetForCandidate
 
 
