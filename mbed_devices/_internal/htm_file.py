@@ -93,9 +93,9 @@ def read_product_code(file_contents: str) -> Optional[str]:
 def read_online_id(file_contents: str) -> Optional[OnlineId]:
     """Returns online id parsed from the files contents, None if not found."""
     regex = r"""
-            (?P<target_type>module|platform)s  # module|platform
-            \/                                 # forward slash in the url
-            (?P<slug>[-\w]+)            # permitted characters in a slug are letters and digits
+            (?P<target_type>module|platform)s   # module|platform
+            \/                                  # forward slash in the url
+            (?P<slug>[-\w]+)                    # permitted characters in a slug are letters and digits
     """
     match = re.search(regex, file_contents, re.VERBOSE)
     if match:
