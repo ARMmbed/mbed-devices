@@ -84,5 +84,9 @@ def _get_all_htm_files_contents(directories: Iterable[pathlib.Path]) -> List[str
 
 
 def _is_htm_file(file: pathlib.Path) -> bool:
+    """Checks whether the file looks like an Mbed HTM file.
+
+    Note that if the file is manually manipulated the file may sometimes appears to be present but not be accessible.
+    """
     extensions = [".htm", ".HTM"]
-    return file.suffix in extensions and not file.name.startswith(".")
+    return file.suffix in extensions and not file.name.startswith(".") and os.access(file, os.R_OK)
