@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 """API for listing devices."""
-from typing import Tuple, List
 
 from mbed_targets.exceptions import MbedTargetsError
 
@@ -12,22 +11,21 @@ from mbed_devices._internal.resolve_target import resolve_target
 from mbed_devices._internal.exceptions import NoTargetForCandidate
 
 from mbed_targets import MbedTarget
-from mbed_devices.device import Device
+from mbed_devices.device import Device, ConnectedDevices
 from mbed_devices.exceptions import DeviceLookupFailed
 
 
-def get_connected_devices() -> Tuple[List[Device], List[Device]]:
+def get_connected_devices() -> ConnectedDevices:
     """Returns Mbed Devices connected to host computer.
 
-    Returns:
-        A tuple containing two lists, the first containing devices identified as Mbed Targets the second those devices
-        connected but not identified as Mbed Targets.
+    Connected devices which have been identified as Mbed Targets and also connected devices which are potentially
+    Mbed Targets (but not could not be identified in the database) are returned.
 
     Raises:
-        DeviceLookupFailed: TODO: find out when.
+        DeviceLookupFailed: If there is a problem with the process of identifying Mbed Targets from connected devices.
     """
-    identified_devices = []
-    unidentified_devices = []
+    connected_devices = ConnectedDevices()
+
     for candidate_device in detect_candidate_devices():
         try:
             mbed_target = resolve_target(candidate_device)
@@ -37,12 +35,12 @@ def get_connected_devices() -> Tuple[List[Device], List[Device]]:
             # Empty Mbed Target to ensure rendering is simple
             mbed_target = MbedTarget.from_offline_target_entry({})
             # Keep a list of devices that could not be identified but are Mbed Targets
-            unidentified_devices.append(_build_device(candidate_device, mbed_target))
+            connected_devices.unidentified_devices.append(_build_device(candidate_device, mbed_target))
         else:
             # Keep a list of devices that have been identified as Mbed Targets
-            identified_devices.append(_build_device(candidate_device, mbed_target))
+            connected_devices.identified_devices.append(_build_device(candidate_device, mbed_target))
 
-    return identified_devices, unidentified_devices
+    return connected_devices
 
 
 def _build_device(candidate_device: CandidateDevice, mbed_target: MbedTarget) -> Device:

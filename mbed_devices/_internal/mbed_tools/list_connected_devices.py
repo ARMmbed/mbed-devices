@@ -24,14 +24,14 @@ from mbed_targets import MbedTarget
     default=False,
     help="Show all connected devices, even those which are not Mbed Targets.",
 )
-def list_connected_devices(format: str, show_all: str) -> None:
+def list_connected_devices(format: str, show_all: bool) -> None:
     """Prints connected devices."""
-    identified_devices, unidentified_devices = get_connected_devices()
+    connected_devices = get_connected_devices()
 
     if show_all:
-        devices = _sort_devices_by_name(identified_devices + unidentified_devices)
+        devices = _sort_devices_by_name(connected_devices.identified_devices + connected_devices.unidentified_devices)
     else:
-        devices = _sort_devices_by_name(identified_devices)
+        devices = _sort_devices_by_name(connected_devices.identified_devices)
 
     output_builders = {
         "table": _build_tabular_output,

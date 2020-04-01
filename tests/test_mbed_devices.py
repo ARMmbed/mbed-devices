@@ -22,9 +22,9 @@ class TestGetConnectedDevices(TestCase):
         candidate = CandidateDeviceFactory()
         detect_candidate_devices.return_value = [candidate]
 
-        identified_devices, unidentified_devices = get_connected_devices()
+        connected_devices = get_connected_devices()
         self.assertEqual(
-            identified_devices,
+            connected_devices.identified_devices,
             [
                 Device(
                     serial_port=candidate.serial_port,
@@ -34,7 +34,7 @@ class TestGetConnectedDevices(TestCase):
                 )
             ],
         )
-        self.assertEqual(unidentified_devices, [])
+        self.assertEqual(connected_devices.unidentified_devices, [])
         resolve_target.assert_called_once_with(candidate)
 
     @mock.patch.object(MbedTarget, "from_offline_target_entry")
@@ -44,10 +44,10 @@ class TestGetConnectedDevices(TestCase):
         detect_candidate_devices.return_value = [candidate]
         mbed_target.return_value = None
 
-        identified_devices, unidentified_devices = get_connected_devices()
-        self.assertEqual(identified_devices, [])
+        connected_devices = get_connected_devices()
+        self.assertEqual(connected_devices.identified_devices, [])
         self.assertEqual(
-            unidentified_devices,
+            connected_devices.unidentified_devices,
             [
                 Device(
                     serial_port=candidate.serial_port,

@@ -5,6 +5,7 @@
 import json
 import pathlib
 from click.testing import CliRunner
+from mbed_devices.device import ConnectedDevices
 from mbed_targets import MbedTarget
 from tabulate import tabulate
 from unittest import TestCase, mock
@@ -22,7 +23,7 @@ from mbed_devices import Device
 @mock.patch("mbed_devices._internal.mbed_tools.list_connected_devices.get_connected_devices")
 class TestListConnectedDevices(TestCase):
     def test_informs_when_no_devices_are_connected(self, get_connected_devices):
-        get_connected_devices.return_value = [], []
+        get_connected_devices.return_value = ConnectedDevices()
 
         result = CliRunner().invoke(list_connected_devices)
 
@@ -36,7 +37,9 @@ class TestListConnectedDevices(TestCase):
     ):
         identified_devices = [mock.Mock(spec_set=Device)]
         unidentified_devices = [mock.Mock(spec_set=Device)]
-        get_connected_devices.return_value = identified_devices, unidentified_devices
+        get_connected_devices.return_value = ConnectedDevices(
+            identified_devices=identified_devices, unidentified_devices=unidentified_devices
+        )
         _build_tabular_output.return_value = "some output"
 
         result = CliRunner().invoke(list_connected_devices)
@@ -53,7 +56,9 @@ class TestListConnectedDevices(TestCase):
     ):
         identified_devices = [mock.Mock(spec_set=Device)]
         unidentified_devices = [mock.Mock(spec_set=Device)]
-        get_connected_devices.return_value = identified_devices, unidentified_devices
+        get_connected_devices.return_value = ConnectedDevices(
+            identified_devices=identified_devices, unidentified_devices=unidentified_devices
+        )
         _build_json_output.return_value = "some output"
 
         result = CliRunner().invoke(list_connected_devices, "--format=json")
@@ -65,12 +70,12 @@ class TestListConnectedDevices(TestCase):
 
     @mock.patch("mbed_devices._internal.mbed_tools.list_connected_devices._sort_devices_by_name")
     @mock.patch("mbed_devices._internal.mbed_tools.list_connected_devices._build_tabular_output")
-    def test_given_show_all(
-        self, _build_tabular_output, _sort_devices_by_name, get_connected_devices
-    ):
+    def test_given_show_all(self, _build_tabular_output, _sort_devices_by_name, get_connected_devices):
         identified_devices = [mock.Mock(spec_set=Device)]
         unidentified_devices = [mock.Mock(spec_set=Device)]
-        get_connected_devices.return_value = identified_devices, unidentified_devices
+        get_connected_devices.return_value = ConnectedDevices(
+            identified_devices=identified_devices, unidentified_devices=unidentified_devices
+        )
         _build_tabular_output.return_value = "some output"
 
         result = CliRunner().invoke(list_connected_devices, "--show-all")
