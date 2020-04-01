@@ -57,7 +57,7 @@ def resolve_target(candidate: CandidateDevice) -> MbedTarget:
         try:
             return get_target_by_online_id(slug=slug, target_type=target_type)
         except UnknownTarget:
-            logger.error(f"Could not identify an Mbed Target with the Slug: '{slug}' and Target Type '{target_type}'.")
+            logger.error(f"Could not identify an Mbed Target with the Slug: '{slug}' and Target Type: '{target_type}'.")
             raise NoTargetForCandidate
 
     # Product code might be the first 4 characters of the serial number
