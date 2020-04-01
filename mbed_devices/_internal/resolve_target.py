@@ -68,7 +68,7 @@ def resolve_target(candidate: CandidateDevice) -> MbedTarget:
         # Most devices have a serial number so this may not be a problem
         logger.info(
             f"The device with the Serial Number: '{candidate.serial_number}' (Product Code: '{product_code}') "
-            f"does not appear to be an Mbed Target ."
+            f"does not appear to be an Mbed Target."
         )
         raise NoTargetForCandidate
 
