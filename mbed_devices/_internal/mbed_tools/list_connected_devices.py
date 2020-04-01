@@ -29,9 +29,9 @@ def list_connected_devices(format: str, show_all: bool) -> None:
     connected_devices = get_connected_devices()
 
     if show_all:
-        devices = _sort_devices_by_name(connected_devices.identified_devices + connected_devices.unidentified_devices)
+        devices = _sort_devices(connected_devices.identified_devices + connected_devices.unidentified_devices)
     else:
-        devices = _sort_devices_by_name(connected_devices.identified_devices)
+        devices = _sort_devices(connected_devices.identified_devices)
 
     output_builders = {
         "table": _build_tabular_output,
@@ -44,7 +44,7 @@ def list_connected_devices(format: str, show_all: bool) -> None:
         click.echo("No connected Mbed devices found.")
 
 
-def _sort_devices_by_name(devices: Iterable[Device]) -> Iterable[Device]:
+def _sort_devices(devices: Iterable[Device]) -> Iterable[Device]:
     """Sort devices by board name and then serial number (in case there are multiple boards with the same name)."""
     return sorted(devices, key=attrgetter("mbed_target.board_name", "serial_number"))
 
