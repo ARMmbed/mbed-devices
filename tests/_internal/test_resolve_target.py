@@ -135,29 +135,17 @@ class TestReadHtmFilesContents(TestCase):
 
 class TestIsHtmFile(TestCase):
     def test_lower_case_htm(self):
-        with Patcher() as patcher:
-            patcher.fs.create_file("mbed.htm", contents="foo")
-            result = _is_htm_file(pathlib.Path("mbed.htm"))
-
+        result = _is_htm_file(pathlib.Path("mbed.htm"))
         self.assertEqual(True, result)
 
     def test_upper_case_htm(self):
-        with Patcher() as patcher:
-            patcher.fs.create_file("MBED.HTM", contents="foo")
-            result = _is_htm_file(pathlib.Path("MBED.HTM"))
-
+        result = _is_htm_file(pathlib.Path("MBED.HTM"))
         self.assertEqual(True, result)
 
     def test_hidden_htm(self):
-        with Patcher() as patcher:
-            patcher.fs.create_file(".htm", contents="foo")
-            result = _is_htm_file(pathlib.Path(".htm"))
-
+        result = _is_htm_file(pathlib.Path(".htm"))
         self.assertEqual(False, result)
 
     def test_text_file(self):
-        with Patcher() as patcher:
-            patcher.fs.create_file("mbed.txt", contents="foo")
-            result = _is_htm_file(pathlib.Path("mbed.txt"))
-
+        result = _is_htm_file(pathlib.Path("mbed.txt"))
         self.assertEqual(False, result)
