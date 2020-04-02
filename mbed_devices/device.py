@@ -7,6 +7,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Tuple, Optional, List
 from mbed_targets import MbedTarget
+from mbed_devices._internal.detect_candidate_devices import CandidateDevice
 
 
 @dataclass(frozen=True, order=True)
@@ -46,3 +47,25 @@ class ConnectedDevices:
 
     identified_devices: List[Device] = field(default_factory=list)
     unidentified_devices: List[Device] = field(default_factory=list)
+
+    def add_device(self, candidate_device: CandidateDevice, mbed_target: Optional[MbedTarget] = None):
+        """Add a candidate device and optionally an Mbed Target Construct to the connected devices.
+
+        Args:
+            candidate_device: a CandidateDevice object containing the raw information for the target.
+            mbed_target: an MbedTarget object for identified devices, for unidentified devices this may be None.
+        """
+        new_device = Device(
+            serial_port=candidate_device.serial_port,
+            serial_number=candidate_device.serial_number,
+            mount_points=candidate_device.mount_points,
+            # Create an empty Mbed Target to ensure the device is fully populated and rendering is simple
+            mbed_target=mbed_target if mbed_target is not None else MbedTarget.from_offline_target_entry({}),
+        )
+
+        if mbed_target is None:
+            # Keep a list of devices that could not be identified but are Mbed Targets
+            self.unidentified_devices.append(new_device)
+        else:
+            # Keep a list of devices that have been identified as Mbed Targets
+            self.identified_devices.append(new_device)
