@@ -13,6 +13,7 @@ from mbed_devices._internal.resolve_target import (
     NoTargetForCandidate,
     _get_all_htm_files_contents,
     resolve_target,
+    _read_htm_file_contents,
     _is_htm_file,
 )
 
@@ -122,6 +123,16 @@ class TestGetAllHtmFilesContents(TestCase):
         self.assertEqual(result, ["foo", "bar"])
 
 
+class TestReadHtmFilesContents(TestCase):
+    def test_handles_unreadable_htm_file(self):
+        with Patcher() as patcher:
+            patcher.fs.create_file("mbed.htm", contents="foo")
+
+            result = _read_htm_file_contents([pathlib.Path("mbed.htm"), pathlib.Path("error.htm")])
+
+        self.assertEqual(result, ["foo"])
+
+
 class TestIsHtmFile(TestCase):
     def test_lower_case_htm(self):
         with Patcher() as patcher:
@@ -148,11 +159,5 @@ class TestIsHtmFile(TestCase):
         with Patcher() as patcher:
             patcher.fs.create_file("mbed.txt", contents="foo")
             result = _is_htm_file(pathlib.Path("mbed.txt"))
-
-        self.assertEqual(False, result)
-
-    def test_unaccessible_file_htm(self):
-        # This should not be considered a valid file as this will raise an exception if accessed
-        result = _is_htm_file(pathlib.Path("mbed.htm"))
 
         self.assertEqual(False, result)

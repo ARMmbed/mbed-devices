@@ -12,7 +12,6 @@ For more information on the mbed-targets package visit https://github.com/ARMmbe
 import itertools
 import logging
 import pathlib
-import os
 
 from typing import Iterable, List, Optional
 
@@ -95,13 +94,21 @@ def _get_all_htm_files_contents(directories: Iterable[pathlib.Path]) -> List[str
     """Yields all htm files contents found in the list of given directories."""
     files_in_each_directory = (directory.iterdir() for directory in directories)
     all_files = itertools.chain.from_iterable(files_in_each_directory)
-    return [file.read_text() for file in all_files if _is_htm_file(file)]
+    return _read_htm_file_contents(all_files)
+
+
+def _read_htm_file_contents(all_files: Iterable[pathlib.Path]) -> List[str]:
+    htm_files_contents = []
+    for file in all_files:
+        if _is_htm_file(file):
+            try:
+                htm_files_contents.append(file.read_text())
+            except OSError:
+                logger.warning(f"The file '{file}' could not be read from the device, target may not be identified.")
+    return htm_files_contents
 
 
 def _is_htm_file(file: pathlib.Path) -> bool:
-    """Checks whether the file looks like an Mbed HTM file and is accessible.
-
-    Note that if the file is manually manipulated the file may sometimes appears to be present but not be accessible.
-    """
+    """Checks whether the file looks like an Mbed HTM file."""
     extensions = [".htm", ".HTM"]
-    return file.suffix in extensions and not file.name.startswith(".") and os.access(file, os.R_OK)
+    return file.suffix in extensions and not file.name.startswith(".")
