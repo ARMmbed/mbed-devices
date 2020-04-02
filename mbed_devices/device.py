@@ -49,11 +49,11 @@ class ConnectedDevices:
     unidentified_devices: List[Device] = field(default_factory=list)
 
     def add_device(self, candidate_device: CandidateDevice, mbed_target: Optional[MbedTarget] = None) -> None:
-        """Add a candidate device and optionally an Mbed Target Construct to the connected devices.
+        """Add a candidate device and optionally an Mbed Target to the connected devices.
 
         Args:
-            candidate_device: a CandidateDevice object containing the raw information for the target.
-            mbed_target: an MbedTarget object for identified devices, for unidentified devices this may be None.
+            candidate_device: a CandidateDevice object containing the device information.
+            mbed_target: an MbedTarget object for identified devices, for unidentified devices this will be None.
         """
         new_device = Device(
             serial_port=candidate_device.serial_port,
