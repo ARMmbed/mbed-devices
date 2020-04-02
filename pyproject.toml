@@ -7,6 +7,8 @@
 # these tokens are used to identify path variables from other variable types.
 PROJECT_ROOT = "."
 PROJECT_NAME = "Mbed Devices"
+PROJECT_UUID = "0f174e1e-8eeb-4344-b22b-88d6fb842eac"
+PACKAGE_NAME = "mbed-devices"
 NEWS_DIR = "news/"
 SOURCE_DIR = "mbed_devices"
 RELEASE_BRANCH_PATTERN = "^release.*$"
@@ -76,3 +78,8 @@ showcontent = false
 
 [tool.black]
 line-length = 120
+
+[spdx]
+CreatorWebsite = "spdx.org"
+PathToSpdx = "spdx/spdxdocs"
+UUID = "8b16566e-74d6-4860-8691-eed283c1e3f2"
