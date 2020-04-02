@@ -10,6 +10,7 @@ located on an "Mbed Enabled" device's USB MSD.
 For more information on the mbed-targets package visit https://github.com/ARMmbed/mbed-targets
 """
 import itertools
+import logging
 import pathlib
 
 from typing import Iterable, List, Optional
@@ -20,6 +21,9 @@ from mbed_targets.exceptions import UnknownTarget
 from mbed_devices._internal.htm_file import OnlineId, read_online_id, read_product_code
 from mbed_devices._internal.candidate_device import CandidateDevice
 from mbed_devices._internal.exceptions import NoTargetForCandidate
+
+
+logger = logging.getLogger(__name__)
 
 
 def resolve_target(candidate: CandidateDevice) -> MbedTarget:
@@ -42,19 +46,29 @@ def resolve_target(candidate: CandidateDevice) -> MbedTarget:
         try:
             return get_target_by_product_code(product_code)
         except UnknownTarget:
+            logger.error(f"Could not identify an Mbed Target with the Product Code: '{product_code}'.")
             raise NoTargetForCandidate
 
     online_id = _extract_online_id(all_files_contents)
     if online_id:
+        slug = online_id.slug
+        target_type = online_id.target_type
         try:
-            return get_target_by_online_id(slug=online_id.device_slug, target_type=online_id.device_type)
+            return get_target_by_online_id(slug=slug, target_type=target_type)
         except UnknownTarget:
+            logger.error(f"Could not identify an Mbed Target with the Slug: '{slug}' and Target Type: '{target_type}'.")
             raise NoTargetForCandidate
 
     # Product code might be the first 4 characters of the serial number
     try:
-        return get_target_by_product_code(candidate.serial_number[:4])
+        product_code = candidate.serial_number[:4]
+        return get_target_by_product_code(product_code)
     except UnknownTarget:
+        # Most devices have a serial number so this may not be a problem
+        logger.info(
+            f"The device with the Serial Number: '{candidate.serial_number}' (Product Code: '{product_code}') "
+            f"does not appear to be an Mbed Target."
+        )
         raise NoTargetForCandidate
 
 
@@ -80,9 +94,21 @@ def _get_all_htm_files_contents(directories: Iterable[pathlib.Path]) -> List[str
     """Yields all htm files contents found in the list of given directories."""
     files_in_each_directory = (directory.iterdir() for directory in directories)
     all_files = itertools.chain.from_iterable(files_in_each_directory)
-    return [file.read_text() for file in all_files if _is_htm_file(file)]
+    return _read_htm_file_contents(all_files)
+
+
+def _read_htm_file_contents(all_files: Iterable[pathlib.Path]) -> List[str]:
+    htm_files_contents = []
+    for file in all_files:
+        if _is_htm_file(file):
+            try:
+                htm_files_contents.append(file.read_text())
+            except OSError:
+                logger.warning(f"The file '{file}' could not be read from the device, target may not be identified.")
+    return htm_files_contents
 
 
 def _is_htm_file(file: pathlib.Path) -> bool:
+    """Checks whether the file looks like an Mbed HTM file."""
     extensions = [".htm", ".HTM"]
     return file.suffix in extensions and not file.name.startswith(".")

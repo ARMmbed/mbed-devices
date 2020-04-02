@@ -5,6 +5,7 @@
 import json
 import pathlib
 from click.testing import CliRunner
+from mbed_devices.device import ConnectedDevices
 from mbed_targets import MbedTarget
 from tabulate import tabulate
 from unittest import TestCase, mock
@@ -14,7 +15,7 @@ from mbed_devices._internal.mbed_tools.list_connected_devices import (
     _build_tabular_output,
     _build_json_output,
     _get_build_targets,
-    _sort_devices_by_name,
+    _sort_devices,
 )
 from mbed_devices import Device
 
@@ -22,53 +23,114 @@ from mbed_devices import Device
 @mock.patch("mbed_devices._internal.mbed_tools.list_connected_devices.get_connected_devices")
 class TestListConnectedDevices(TestCase):
     def test_informs_when_no_devices_are_connected(self, get_connected_devices):
-        get_connected_devices.return_value = []
+        get_connected_devices.return_value = ConnectedDevices()
 
         result = CliRunner().invoke(list_connected_devices)
 
         self.assertEqual(result.exit_code, 0)
         self.assertIn("No connected Mbed devices found.", result.output)
 
-    @mock.patch("mbed_devices._internal.mbed_tools.list_connected_devices._sort_devices_by_name")
+    @mock.patch("mbed_devices._internal.mbed_tools.list_connected_devices._sort_devices")
     @mock.patch("mbed_devices._internal.mbed_tools.list_connected_devices._build_tabular_output")
     def test_by_default_lists_devices_using_tabular_output(
-        self, _build_tabular_output, _sort_devices_by_name, get_connected_devices
+        self, _build_tabular_output, _sort_devices, get_connected_devices
     ):
-        get_connected_devices.return_value = [mock.Mock(spec_set=Device)]
+        identified_devices = [mock.Mock(spec_set=Device)]
+        unidentified_devices = [mock.Mock(spec_set=Device)]
+        get_connected_devices.return_value = ConnectedDevices(
+            identified_devices=identified_devices, unidentified_devices=unidentified_devices
+        )
         _build_tabular_output.return_value = "some output"
 
         result = CliRunner().invoke(list_connected_devices)
 
         self.assertEqual(result.exit_code, 0)
         self.assertIn(_build_tabular_output.return_value, result.output)
-        _build_tabular_output.assert_called_once_with(_sort_devices_by_name.return_value)
-        _sort_devices_by_name.assert_called_once_with(get_connected_devices.return_value)
+        _build_tabular_output.assert_called_once_with(_sort_devices.return_value)
+        _sort_devices.assert_called_once_with(identified_devices)
 
-    @mock.patch("mbed_devices._internal.mbed_tools.list_connected_devices._sort_devices_by_name")
+    @mock.patch("mbed_devices._internal.mbed_tools.list_connected_devices._sort_devices")
     @mock.patch("mbed_devices._internal.mbed_tools.list_connected_devices._build_json_output")
     def test_given_json_flag_lists_devices_using_json_output(
-        self, _build_json_output, _sort_devices_by_name, get_connected_devices
+        self, _build_json_output, _sort_devices, get_connected_devices
     ):
-        get_connected_devices.return_value = [mock.Mock(spec_set=Device)]
+        identified_devices = [mock.Mock(spec_set=Device)]
+        unidentified_devices = [mock.Mock(spec_set=Device)]
+        get_connected_devices.return_value = ConnectedDevices(
+            identified_devices=identified_devices, unidentified_devices=unidentified_devices
+        )
         _build_json_output.return_value = "some output"
 
         result = CliRunner().invoke(list_connected_devices, "--format=json")
 
         self.assertEqual(result.exit_code, 0)
         self.assertIn(_build_json_output.return_value, result.output)
-        _build_json_output.assert_called_once_with(_sort_devices_by_name.return_value)
-        _sort_devices_by_name.assert_called_once_with(get_connected_devices.return_value)
+        _build_json_output.assert_called_once_with(_sort_devices.return_value)
+        _sort_devices.assert_called_once_with(identified_devices)
+
+    @mock.patch("mbed_devices._internal.mbed_tools.list_connected_devices._sort_devices")
+    @mock.patch("mbed_devices._internal.mbed_tools.list_connected_devices._build_tabular_output")
+    def test_given_show_all(self, _build_tabular_output, _sort_devices, get_connected_devices):
+        identified_devices = [mock.Mock(spec_set=Device)]
+        unidentified_devices = [mock.Mock(spec_set=Device)]
+        get_connected_devices.return_value = ConnectedDevices(
+            identified_devices=identified_devices, unidentified_devices=unidentified_devices
+        )
+        _build_tabular_output.return_value = "some output"
+
+        result = CliRunner().invoke(list_connected_devices, "--show-all")
+
+        self.assertEqual(result.exit_code, 0)
+        self.assertIn(_build_tabular_output.return_value, result.output)
+        _build_tabular_output.assert_called_once_with(_sort_devices.return_value)
+        _sort_devices.assert_called_once_with(identified_devices + unidentified_devices)
 
 
-class TestSortDevicesByName(TestCase):
+class TestSortDevices(TestCase):
     def test_sorts_devices_by_mbed_target_board_name(self):
-        device_1 = mock.create_autospec(Device, mbed_target=mock.create_autospec(MbedTarget, board_name="A"))
-        device_2 = mock.create_autospec(Device, mbed_target=mock.create_autospec(MbedTarget, board_name="B"))
-        device_3 = mock.create_autospec(Device, mbed_target=mock.create_autospec(MbedTarget, board_name="C"))
+        device_1 = mock.create_autospec(
+            Device, mbed_target=mock.create_autospec(MbedTarget, board_name="A"), serial_number="123"
+        )
+        device_2 = mock.create_autospec(
+            Device, mbed_target=mock.create_autospec(MbedTarget, board_name="B"), serial_number="456"
+        )
+        device_3 = mock.create_autospec(
+            Device, mbed_target=mock.create_autospec(MbedTarget, board_name="C"), serial_number="789"
+        )
 
-        result = _sort_devices_by_name([device_3, device_1, device_2])
+        result = _sort_devices([device_3, device_1, device_2])
 
         self.assertEqual(list(result), [device_1, device_2, device_3])
+
+    def test_sorts_devices_by_serial_number(self):
+        device_1 = mock.create_autospec(
+            Device, mbed_target=mock.create_autospec(MbedTarget, board_name=""), serial_number="123"
+        )
+        device_2 = mock.create_autospec(
+            Device, mbed_target=mock.create_autospec(MbedTarget, board_name=""), serial_number="456"
+        )
+        device_3 = mock.create_autospec(
+            Device, mbed_target=mock.create_autospec(MbedTarget, board_name=""), serial_number="789"
+        )
+
+        result = _sort_devices([device_3, device_1, device_2])
+
+        self.assertEqual(list(result), [device_1, device_2, device_3])
+
+    def test_sorts_devices_by_board_name_then_serial_number(self):
+        device_1 = mock.create_autospec(
+            Device, mbed_target=mock.create_autospec(MbedTarget, board_name=""), serial_number="123"
+        )
+        device_2 = mock.create_autospec(
+            Device, mbed_target=mock.create_autospec(MbedTarget, board_name="Mbed"), serial_number="456"
+        )
+        device_3 = mock.create_autospec(
+            Device, mbed_target=mock.create_autospec(MbedTarget, board_name=""), serial_number="789"
+        )
+
+        result = _sort_devices([device_3, device_1, device_2])
+
+        self.assertEqual(list(result), [device_1, device_3, device_2])
 
 
 class TestBuildTableOutput(TestCase):
