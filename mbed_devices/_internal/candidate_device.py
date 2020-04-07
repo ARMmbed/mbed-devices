@@ -1,3 +1,7 @@
+#
+# Copyright (C) 2020 Arm Mbed. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
 """Defines CandidateDevice model used for device detection."""
 from dataclasses import dataclass
 from typing import Optional, Tuple, Any, Union, cast

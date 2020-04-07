@@ -1,3 +1,7 @@
+#
+# Copyright (C) 2020 Arm Mbed. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
 """Loads System's USB hub."""
 
 from typing import Dict, List, cast, Optional, Set, Generator

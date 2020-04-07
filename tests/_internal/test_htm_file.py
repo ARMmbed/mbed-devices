@@ -1,3 +1,7 @@
+#
+# Copyright (C) 2020 Arm Mbed. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
 from unittest import TestCase
 
 from mbed_devices._internal.htm_file import read_product_code, read_online_id, OnlineId
@@ -28,9 +32,7 @@ class TestReadOnlineId(TestCase):
         url = "https://os.mbed.com/platforms/THIS-IS_a_SLUG_123/"
         file_contents = f"window.location.replace({url});"
 
-        self.assertEqual(
-            read_online_id(file_contents), OnlineId(device_type="platform", device_slug="THIS-IS_a_SLUG_123")
-        )
+        self.assertEqual(read_online_id(file_contents), OnlineId(target_type="platform", slug="THIS-IS_a_SLUG_123"))
 
     def test_none_if_not_found(self):
         file_contents = f"window.location.replace(https://os.mbed.com/about);"

@@ -1,3 +1,7 @@
+#
+# Copyright (C) 2020 Arm Mbed. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
 """Data aggregation about a disk on Windows.
 
 On Windows, information about disk drive is scattered around Physical disks,

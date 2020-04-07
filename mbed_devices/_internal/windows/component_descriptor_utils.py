@@ -1,3 +1,7 @@
+#
+# Copyright (C) 2020 Arm Mbed. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
 """Utilities with regards to Win32 component descriptors."""
 from typing import Any, NamedTuple, Union
 from collections import OrderedDict

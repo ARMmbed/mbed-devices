@@ -1,3 +1,7 @@
+#
+# Copyright (C) 2020 Arm Mbed. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
 from unittest import TestCase, mock
 
 from tests.markers import windows_only, darwin_only, linux_only

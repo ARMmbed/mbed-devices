@@ -1,3 +1,7 @@
+#
+# Copyright (C) 2020 Arm Mbed. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
 """List all devices cli command."""
 import click
 import json
@@ -13,9 +17,22 @@ from mbed_targets import MbedTarget
 @click.option(
     "--format", type=click.Choice(["table", "json"]), default="table", show_default=True, help="Set output format."
 )
-def list_connected_devices(format: str) -> None:
+@click.option(
+    "--show-all",
+    "-a",
+    is_flag=True,
+    default=False,
+    help="Show all connected devices, even those which are not Mbed Targets.",
+)
+def list_connected_devices(format: str, show_all: bool) -> None:
     """Prints connected devices."""
-    devices = _sort_devices_by_name(get_connected_devices())
+    connected_devices = get_connected_devices()
+
+    if show_all:
+        devices = _sort_devices(connected_devices.identified_devices + connected_devices.unidentified_devices)
+    else:
+        devices = _sort_devices(connected_devices.identified_devices)
+
     output_builders = {
         "table": _build_tabular_output,
         "json": _build_json_output,
@@ -27,8 +44,9 @@ def list_connected_devices(format: str) -> None:
         click.echo("No connected Mbed devices found.")
 
 
-def _sort_devices_by_name(devices: Iterable[Device]) -> Iterable[Device]:
-    return sorted(devices, key=attrgetter("mbed_target.board_name"))
+def _sort_devices(devices: Iterable[Device]) -> Iterable[Device]:
+    """Sort devices by board name and then serial number (in case there are multiple boards with the same name)."""
+    return sorted(devices, key=attrgetter("mbed_target.board_name", "serial_number"))
 
 
 def _build_tabular_output(devices: Iterable[Device]) -> str:
