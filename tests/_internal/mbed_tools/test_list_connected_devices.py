@@ -173,9 +173,9 @@ class TestBuildTableOutput(TestCase):
         expected_output = tabulate(
             [
                 [
-                    device.mbed_target.board_name,
+                    "<unknown>",
                     device.serial_number,
-                    "UNKNOWN",
+                    "<unknown>",
                     "\n".join(map(str, device.mount_points)),
                     "\n".join(_get_build_targets(device.mbed_target)),
                 ]

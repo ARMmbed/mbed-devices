@@ -55,9 +55,9 @@ def _build_tabular_output(devices: Iterable[Device]) -> str:
     for device in devices:
         devices_data.append(
             [
-                device.mbed_target.board_name,
+                device.mbed_target.board_name or "<unknown>",
                 device.serial_number,
-                device.serial_port or "UNKNOWN",
+                device.serial_port or "<unknown>",
                 "\n".join(str(mount_point) for mount_point in device.mount_points),
                 "\n".join(_get_build_targets(device.mbed_target)),
             ]
