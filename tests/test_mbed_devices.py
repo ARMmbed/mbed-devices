@@ -4,21 +4,21 @@
 #
 from unittest import TestCase, mock
 
-from mbed_targets import MbedTarget
+from mbed_targets import Board
 from mbed_targets.exceptions import MbedTargetsError
 
 from tests.factories import CandidateDeviceFactory
 from mbed_devices.device import Device
-from mbed_devices._internal.exceptions import NoTargetForCandidate
+from mbed_devices._internal.exceptions import NoBoardForCandidate
 
 from mbed_devices.mbed_devices import get_connected_devices
 from mbed_devices.exceptions import DeviceLookupFailed
 
 
 @mock.patch("mbed_devices.mbed_devices.detect_candidate_devices")
-@mock.patch("mbed_devices.mbed_devices.resolve_target")
+@mock.patch("mbed_devices.mbed_devices.resolve_board")
 class TestGetConnectedDevices(TestCase):
-    def test_builds_devices_from_candidates(self, resolve_target, detect_candidate_devices):
+    def test_builds_devices_from_candidates(self, resolve_board, detect_candidate_devices):
         candidate = CandidateDeviceFactory()
         detect_candidate_devices.return_value = [candidate]
 
@@ -30,19 +30,19 @@ class TestGetConnectedDevices(TestCase):
                     serial_port=candidate.serial_port,
                     serial_number=candidate.serial_number,
                     mount_points=candidate.mount_points,
-                    mbed_target=resolve_target.return_value,
+                    mbed_board=resolve_board.return_value,
                 )
             ],
         )
         self.assertEqual(connected_devices.unidentified_devices, [])
-        resolve_target.assert_called_once_with(candidate)
+        resolve_board.assert_called_once_with(candidate)
 
-    @mock.patch.object(MbedTarget, "from_offline_target_entry")
-    def test_skips_candidates_without_a_target(self, mbed_target, resolve_target, detect_candidate_devices):
+    @mock.patch.object(Board, "from_offline_board_entry")
+    def test_skips_candidates_without_a_board(self, board, resolve_board, detect_candidate_devices):
         candidate = CandidateDeviceFactory()
-        resolve_target.side_effect = NoTargetForCandidate
+        resolve_board.side_effect = NoBoardForCandidate
         detect_candidate_devices.return_value = [candidate]
-        mbed_target.return_value = None
+        board.return_value = None
 
         connected_devices = get_connected_devices()
         self.assertEqual(connected_devices.identified_devices, [])
@@ -53,13 +53,13 @@ class TestGetConnectedDevices(TestCase):
                     serial_port=candidate.serial_port,
                     serial_number=candidate.serial_number,
                     mount_points=candidate.mount_points,
-                    mbed_target=None,
+                    mbed_board=None,
                 )
             ],
         )
 
-    def test_raises_device_lookup_failed_on_internal_error(self, resolve_target, detect_candidate_devices):
-        resolve_target.side_effect = MbedTargetsError
+    def test_raises_device_lookup_failed_on_internal_error(self, resolve_board, detect_candidate_devices):
+        resolve_board.side_effect = MbedTargetsError
         detect_candidate_devices.return_value = [CandidateDeviceFactory()]
 
         with self.assertRaises(DeviceLookupFailed):
