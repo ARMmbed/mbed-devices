@@ -11,5 +11,5 @@ class SystemException(ToolsError):
     """Exception with regards to the underlying operating system."""
 
 
-class NoTargetForCandidate(ToolsError):
-    """Raised when target cannot be determined for a candidate."""
+class NoBoardForCandidate(ToolsError):
+    """Raised when board data cannot be determined for a candidate."""

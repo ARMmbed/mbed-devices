@@ -6,7 +6,7 @@ import json
 import pathlib
 from click.testing import CliRunner
 from mbed_devices.device import ConnectedDevices
-from mbed_targets import MbedTarget
+from mbed_targets import Board
 from tabulate import tabulate
 from unittest import TestCase, mock
 
@@ -87,15 +87,15 @@ class TestListConnectedDevices(TestCase):
 
 
 class TestSortDevices(TestCase):
-    def test_sorts_devices_by_mbed_target_board_name(self):
+    def test_sorts_devices_by_board_name(self):
         device_1 = mock.create_autospec(
-            Device, mbed_target=mock.create_autospec(MbedTarget, board_name="A"), serial_number="123"
+            Device, mbed_board=mock.create_autospec(Board, board_name="A"), serial_number="123"
         )
         device_2 = mock.create_autospec(
-            Device, mbed_target=mock.create_autospec(MbedTarget, board_name="B"), serial_number="456"
+            Device, mbed_board=mock.create_autospec(Board, board_name="B"), serial_number="456"
         )
         device_3 = mock.create_autospec(
-            Device, mbed_target=mock.create_autospec(MbedTarget, board_name="C"), serial_number="789"
+            Device, mbed_board=mock.create_autospec(Board, board_name="C"), serial_number="789"
         )
 
         result = _sort_devices([device_3, device_1, device_2])
@@ -104,13 +104,13 @@ class TestSortDevices(TestCase):
 
     def test_sorts_devices_by_serial_number(self):
         device_1 = mock.create_autospec(
-            Device, mbed_target=mock.create_autospec(MbedTarget, board_name=""), serial_number="123"
+            Device, mbed_board=mock.create_autospec(Board, board_name=""), serial_number="123"
         )
         device_2 = mock.create_autospec(
-            Device, mbed_target=mock.create_autospec(MbedTarget, board_name=""), serial_number="456"
+            Device, mbed_board=mock.create_autospec(Board, board_name=""), serial_number="456"
         )
         device_3 = mock.create_autospec(
-            Device, mbed_target=mock.create_autospec(MbedTarget, board_name=""), serial_number="789"
+            Device, mbed_board=mock.create_autospec(Board, board_name=""), serial_number="789"
         )
 
         result = _sort_devices([device_3, device_1, device_2])
@@ -119,13 +119,13 @@ class TestSortDevices(TestCase):
 
     def test_sorts_devices_by_board_name_then_serial_number(self):
         device_1 = mock.create_autospec(
-            Device, mbed_target=mock.create_autospec(MbedTarget, board_name=""), serial_number="123"
+            Device, mbed_board=mock.create_autospec(Board, board_name=""), serial_number="123"
         )
         device_2 = mock.create_autospec(
-            Device, mbed_target=mock.create_autospec(MbedTarget, board_name="Mbed"), serial_number="456"
+            Device, mbed_board=mock.create_autospec(Board, board_name="Mbed"), serial_number="456"
         )
         device_3 = mock.create_autospec(
-            Device, mbed_target=mock.create_autospec(MbedTarget, board_name=""), serial_number="789"
+            Device, mbed_board=mock.create_autospec(Board, board_name=""), serial_number="789"
         )
 
         result = _sort_devices([device_3, device_1, device_2])
@@ -136,8 +136,8 @@ class TestSortDevices(TestCase):
 class TestBuildTableOutput(TestCase):
     def test_returns_tabularised_representation_of_devices(self):
         device = Device(
-            mbed_target=mock.create_autospec(
-                MbedTarget, board_name="board-name", build_variant=("S", "NS"), board_type="board-type",
+            mbed_board=mock.create_autospec(
+                Board, board_name="board-name", build_variant=("S", "NS"), board_type="board-type",
             ),
             serial_number="serial-number",
             serial_port="serial-port",
@@ -149,11 +149,11 @@ class TestBuildTableOutput(TestCase):
         expected_output = tabulate(
             [
                 [
-                    device.mbed_target.board_name,
+                    device.mbed_board.board_name,
                     device.serial_number,
                     device.serial_port,
                     "\n".join(map(str, device.mount_points)),
-                    "\n".join(_get_build_targets(device.mbed_target)),
+                    "\n".join(_get_build_targets(device.mbed_board)),
                 ]
             ],
             headers=["Board name", "Serial number", "Serial port", "Mount point(s)", "Build target(s)"],
@@ -162,7 +162,7 @@ class TestBuildTableOutput(TestCase):
 
     def test_displays_unknown_serial_port_value(self):
         device = Device(
-            mbed_target=MbedTarget.from_offline_target_entry({}),
+            mbed_board=Board.from_offline_board_entry({}),
             serial_number="serial",
             serial_port=None,
             mount_points=[pathlib.Path("somepath")],
@@ -173,11 +173,11 @@ class TestBuildTableOutput(TestCase):
         expected_output = tabulate(
             [
                 [
-                    device.mbed_target.board_name,
+                    "<unknown>",
                     device.serial_number,
-                    "UNKNOWN",
+                    "<unknown>",
                     "\n".join(map(str, device.mount_points)),
-                    "\n".join(_get_build_targets(device.mbed_target)),
+                    "\n".join(_get_build_targets(device.mbed_board)),
                 ]
             ],
             headers=["Board name", "Serial number", "Serial port", "Mount point(s)", "Build target(s)"],
@@ -187,8 +187,8 @@ class TestBuildTableOutput(TestCase):
 
 class TestBuildJsonOutput(TestCase):
     def test_returns_json_representation_of_devices(self):
-        mbed_target = mock.create_autospec(
-            MbedTarget,
+        board = mock.create_autospec(
+            Board,
             product_code="0021",
             board_type="HAT-BOAT",
             board_name="HAT Boat",
@@ -197,10 +197,7 @@ class TestBuildJsonOutput(TestCase):
             build_variant=("S", "NS"),
         )
         device = Device(
-            mbed_target=mbed_target,
-            serial_number="09887654",
-            serial_port="COM1",
-            mount_points=[pathlib.Path("somepath")],
+            mbed_board=board, serial_number="09887654", serial_port="COM1", mount_points=[pathlib.Path("somepath")],
         )
 
         output = _build_json_output([device])
@@ -210,13 +207,13 @@ class TestBuildJsonOutput(TestCase):
                     "serial_number": device.serial_number,
                     "serial_port": device.serial_port,
                     "mount_points": [str(m) for m in device.mount_points],
-                    "mbed_target": {
-                        "product_code": mbed_target.product_code,
-                        "board_type": mbed_target.board_type,
-                        "board_name": mbed_target.board_name,
-                        "mbed_os_support": mbed_target.mbed_os_support,
-                        "mbed_enabled": mbed_target.mbed_enabled,
-                        "build_targets": _get_build_targets(mbed_target),
+                    "mbed_board": {
+                        "product_code": board.product_code,
+                        "board_type": board.board_type,
+                        "board_name": board.board_name,
+                        "mbed_os_support": board.mbed_os_support,
+                        "mbed_enabled": board.mbed_enabled,
+                        "build_targets": _get_build_targets(board),
                     },
                 }
             ],
@@ -228,10 +225,7 @@ class TestBuildJsonOutput(TestCase):
     def test_empty_values_keys_are_always_present(self):
         """Asserts that keys are present even if value is None."""
         device = Device(
-            mbed_target=MbedTarget.from_offline_target_entry({}),
-            serial_number="foo",
-            serial_port=None,
-            mount_points=[],
+            mbed_board=Board.from_offline_board_entry({}), serial_number="foo", serial_port=None, mount_points=[],
         )
 
         output = json.loads(_build_json_output([device]))
@@ -241,6 +235,6 @@ class TestBuildJsonOutput(TestCase):
 
 class TestGetBuildTargets(TestCase):
     def test_returns_base_target_and_all_variants(self):
-        mbed_target = mock.create_autospec(MbedTarget, build_variant=("S", "NS"), board_type="FOO")
+        board = mock.create_autospec(Board, build_variant=("S", "NS"), board_type="FOO")
 
-        self.assertEqual(_get_build_targets(mbed_target), ["FOO_S", "FOO_NS", "FOO"])
+        self.assertEqual(_get_build_targets(board), ["FOO_S", "FOO_NS", "FOO"])

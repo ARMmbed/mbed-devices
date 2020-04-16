@@ -15,28 +15,28 @@ import pathlib
 
 from typing import Iterable, List, Optional
 
-from mbed_targets import MbedTarget, get_target_by_product_code, get_target_by_online_id
-from mbed_targets.exceptions import UnknownTarget
+from mbed_targets import Board, get_board_by_product_code, get_board_by_online_id
+from mbed_targets.exceptions import UnknownBoard
 
 from mbed_devices._internal.htm_file import OnlineId, read_online_id, read_product_code
 from mbed_devices._internal.candidate_device import CandidateDevice
-from mbed_devices._internal.exceptions import NoTargetForCandidate
+from mbed_devices._internal.exceptions import NoBoardForCandidate
 
 
 logger = logging.getLogger(__name__)
 
 
-def resolve_target(candidate: CandidateDevice) -> MbedTarget:
-    """Resolves target for a given CandidateDevice.
+def resolve_board(candidate: CandidateDevice) -> Board:
+    """Resolves board for a given CandidateDevice.
 
-    This function interrogates CandidateDevice, attempting to establish the best method to resolve an MbedTarget,
+    This function interrogates CandidateDevice, attempting to establish the best method to resolve a Board,
     the rules are as follows:
 
     1. Use product code retrieved from one of HTM files in the mass storage if available.
     2. Use online id retrieved from one of the HTM files in the mass storage if available.
     3. Fallback to product code retrieved from serial number.
 
-    The specification of HTM files is that they redirect to devices product page on os.mbed.com.
+    The specification of HTM files is that they redirect to board's product page on os.mbed.com.
     Information about Mbed Enabled requirements: https://www.mbed.com/en/about-mbed/mbed-enabled/requirements/
     """
     all_files_contents = _get_all_htm_files_contents(candidate.mount_points)
@@ -44,32 +44,32 @@ def resolve_target(candidate: CandidateDevice) -> MbedTarget:
     product_code = _extract_product_code(all_files_contents)
     if product_code:
         try:
-            return get_target_by_product_code(product_code)
-        except UnknownTarget:
-            logger.error(f"Could not identify an Mbed Target with the Product Code: '{product_code}'.")
-            raise NoTargetForCandidate
+            return get_board_by_product_code(product_code)
+        except UnknownBoard:
+            logger.error(f"Could not identify a board with the product code: '{product_code}'.")
+            raise NoBoardForCandidate
 
     online_id = _extract_online_id(all_files_contents)
     if online_id:
         slug = online_id.slug
         target_type = online_id.target_type
         try:
-            return get_target_by_online_id(slug=slug, target_type=target_type)
-        except UnknownTarget:
-            logger.error(f"Could not identify an Mbed Target with the Slug: '{slug}' and Target Type: '{target_type}'.")
-            raise NoTargetForCandidate
+            return get_board_by_online_id(slug=slug, target_type=target_type)
+        except UnknownBoard:
+            logger.error(f"Could not identify a board with the slug: '{slug}' and target type: '{target_type}'.")
+            raise NoBoardForCandidate
 
     # Product code might be the first 4 characters of the serial number
     try:
         product_code = candidate.serial_number[:4]
-        return get_target_by_product_code(product_code)
-    except UnknownTarget:
+        return get_board_by_product_code(product_code)
+    except UnknownBoard:
         # Most devices have a serial number so this may not be a problem
         logger.info(
             f"The device with the Serial Number: '{candidate.serial_number}' (Product Code: '{product_code}') "
-            f"does not appear to be an Mbed Target."
+            f"does not appear to be an Mbed development board."
         )
-        raise NoTargetForCandidate
+        raise NoBoardForCandidate
 
 
 def _extract_product_code(all_files_contents: Iterable[str]) -> Optional[str]:
