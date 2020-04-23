@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 import pathlib
-from pyfakefs.fake_filesystem_unittest import Patcher
+import tempfile
 from unittest import TestCase, mock
 from mbed_targets.exceptions import UnknownBoard
 
@@ -112,23 +112,28 @@ class TestResolveBoardUsingProductCodeFromSerial(TestCase):
 
 class TestGetAllHtmFilesContents(TestCase):
     def test_returns_contents_of_all_htm_files_in_given_directories(self):
-        with Patcher() as patcher:
-            patcher.fs.create_file("/test-1/mbed.htm", contents="foo")
-            patcher.fs.create_file("/test-2/whatever.htm", contents="bar")
-            patcher.fs.create_file("/test-1/file.txt", contents="txt files should not be read")
-            patcher.fs.create_file("/test-1/._MBED.HTM", contents="hidden files should not be read")
+        with tempfile.TemporaryDirectory() as directory:
+            directory_1 = pathlib.Path(directory, "test-1")
+            directory_1.mkdir()
+            directory_2 = pathlib.Path(directory, "test-2")
+            directory_2.mkdir()
+            pathlib.Path(directory_1, "mbed.htm").write_text("foo")
+            pathlib.Path(directory_2, "whatever.htm").write_text("bar")
+            pathlib.Path(directory_1, "file.txt").write_text("txt files should not be read")
+            pathlib.Path(directory_1, "._MBED.HTM").write_text("hidden files should not be read")
 
-            result = _get_all_htm_files_contents([pathlib.Path("/test-1"), pathlib.Path("/test-2")])
+            result = _get_all_htm_files_contents([directory_1, directory_2])
 
         self.assertEqual(result, ["foo", "bar"])
 
 
 class TestReadHtmFilesContents(TestCase):
     def test_handles_unreadable_htm_file(self):
-        with Patcher() as patcher:
-            patcher.fs.create_file("mbed.htm", contents="foo")
+        with tempfile.TemporaryDirectory() as directory:
+            htm_file = pathlib.Path(directory, "mbed.htm")
+            htm_file.write_text("foo")
 
-            result = _read_htm_file_contents([pathlib.Path("mbed.htm"), pathlib.Path("error.htm")])
+            result = _read_htm_file_contents([htm_file, pathlib.Path("error.htm")])
 
         self.assertEqual(result, ["foo"])
 
