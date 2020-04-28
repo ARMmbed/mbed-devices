@@ -42,8 +42,8 @@ setup(
     install_requires=[
         "python-dotenv",
         "Click==7.0",
-        "mbed-targets",
-        "mbed-tools-lib",
+        "mbed-targets~=1.0",
+        "mbed-tools-lib~=1.2",
         "pywin32; platform_system=='Windows'",
         "psutil; platform_system=='Linux'",
         "pyudev; platform_system=='Linux'",
