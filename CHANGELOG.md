@@ -11,3 +11,59 @@ beta releases are not included in this history. For a full list of all releases,
 [PyPI Release History](https://pypi.org/project/mbed-devices/#history).
 
 [//]: # (begin_release_notes)
+
+"1.0.0" (2020-04-28)
+====================
+
+Major changes
+-------------
+
+- Initial release. (#1)
+
+
+Features
+--------
+
+- Allow usage of `python -m mbed_devices` (#3)
+- Add MacOS adapter for listing devices (#20200213)
+- Add Windows adapter for listing devices (#20200218)
+- Add MBED.HTM file parser (#20200219)
+- Expose Candidates built from DeviceCandidates in CLI (#20200224)
+- Added Linux adapter. (#20200226)
+- Read product code from CandidateDevice (#20200228)
+- Support json output format (#20200303)
+- Use new public api of mbed-targets (#20200304)
+- Sort output by target name (#20200305)
+- Fallback to extracting product code from serial number (#20200313)
+- Expose configuration variables to the cli (#20200317)
+- Added new command line option `--show-all` to display connected devices and improved log messages. (#20200401)
+- Common start for device detection (#202002101)
+- Add cli interface for listing connected devices (#202002212)
+- Created a new Windows component identifier to handle the use of either InstanceIDs or SerialNumbers by the system for related components (#202002282)
+- Link MbedTarget to Device based on product code (#2020022801)
+- Extract slug and type from product url in HTM file (#2020030301)
+- Identify targets by slug (#2020030401)
+
+
+Bugfixes
+--------
+
+- Strip vendor names from vendor_id field on Darwin (#20200218)
+- Less verbose logging for expected flow (#20200224)
+- Don't read hidden files (#20200306)
+- Fix invalid mypy types after upgrade to >=0.770 (#20200311)
+- Fixed pre-commit configuration (#20200323)
+- Show unknown text in tabular output (when show all selected) if a board cannot be identified. (#20200407)
+- Checked 3rd-party licences. (#20200427)
+
+
+Improved Documentation
+----------------------
+
+- Added licence notice (#20200319)
+
+
+Misc
+----
+
+- #2, #20200210, #20200217, #20200219, #20200221, #20200227, #20200228, #20200303, #20200304, #20200305, #20200306, #20200310, #20200311, #20200312, #20200313, #20200316, #20200318, #20200402, #20200415, #20200420, #20200422, #20200423, #20200427, #20200428, #202002191, #202002211, #2020022801, #2020022802, #2020022803, #2020022804, #2020030301, #2020030401, #2020030402, #2020030403, #2020030404, #2020030501, #2020031001

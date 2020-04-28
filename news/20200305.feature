@@ -1,1 +1,0 @@
-Sort output by target name

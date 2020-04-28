@@ -1,1 +1,0 @@
-Link MbedTarget to Device based on product code

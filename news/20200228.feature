@@ -1,1 +1,0 @@
-Read product code from CandidateDevice

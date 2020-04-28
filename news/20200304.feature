@@ -1,1 +1,0 @@
-Use new public api of mbed-targets

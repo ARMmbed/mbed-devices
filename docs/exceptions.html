@@ -8,8 +8,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.8.1" />
-<title>mbed_devices API documentation</title>
-<meta name="description" content="mbed-devices provides an API to detect any Mbed OS devices connected to the host computer …" />
+<title>mbed_devices.exceptions API documentation</title>
+<meta name="description" content="Public exceptions raised by the package." />
 <link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
 <link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
@@ -21,14 +21,10 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Package <code>mbed_devices</code></h1>
+<h1 class="title">Module <code>mbed_devices.exceptions</code></h1>
 </header>
 <section id="section-intro">
-<p>mbed-devices provides an API to detect any Mbed OS devices connected to the host computer.</p>
-<p>It is expected that this package will be used by developers of Mbed OS tooling rather than by users of Mbed OS.
-This package uses the <a href="https://github.com/ARMmbed/mbed-targets">https://github.com/ARMmbed/mbed-targets</a> interface to identify valid Mbed Enabled Devices.
-Please see the documentation for mbed-targets for information on configuration options.</p>
-<p>For the command line interface to the API see the package <a href="https://github.com/ARMmbed/mbed-tools">https://github.com/ARMmbed/mbed-tools</a></p>
+<p>Public exceptions raised by the package.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -37,46 +33,73 @@ Please see the documentation for mbed-targets for information on configuration o
 # Copyright (C) 2020 Arm Mbed. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
-&#34;&#34;&#34;mbed-devices provides an API to detect any Mbed OS devices connected to the host computer.
+&#34;&#34;&#34;Public exceptions raised by the package.&#34;&#34;&#34;
+from mbed_tools_lib.exceptions import ToolsError
 
-It is expected that this package will be used by developers of Mbed OS tooling rather than by users of Mbed OS.
-This package uses the https://github.com/ARMmbed/mbed-targets interface to identify valid Mbed Enabled Devices.
-Please see the documentation for mbed-targets for information on configuration options.
 
-For the command line interface to the API see the package https://github.com/ARMmbed/mbed-tools
-&#34;&#34;&#34;
-from mbed_devices._version import __version__
-from mbed_devices.mbed_devices import get_connected_devices
-from mbed_devices.device import Device
-from mbed_devices import exceptions</code></pre>
+class MbedDevicesError(ToolsError):
+    &#34;&#34;&#34;Base public exception for the mbed-devices package.&#34;&#34;&#34;
+
+
+class DeviceLookupFailed(MbedDevicesError):
+    &#34;&#34;&#34;Failed to look up data associated with the device.&#34;&#34;&#34;</code></pre>
 </details>
 </section>
 <section>
-<h2 class="section-title" id="header-submodules">Sub-modules</h2>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt><code class="name"><a title="mbed_devices.device" href="device.html">mbed_devices.device</a></code></dt>
+<dt id="mbed_devices.exceptions.DeviceLookupFailed"><code class="flex name class">
+<span>class <span class="ident">DeviceLookupFailed</span></span>
+<span>(</span><span>...)</span>
+</code></dt>
 <dd>
-<div class="desc"><p>Data model definition for Device and ConnectedDevices.</p></div>
+<div class="desc"><p>Failed to look up data associated with the device.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class DeviceLookupFailed(MbedDevicesError):
+    &#34;&#34;&#34;Failed to look up data associated with the device.&#34;&#34;&#34;</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="mbed_devices.exceptions.MbedDevicesError" href="#mbed_devices.exceptions.MbedDevicesError">MbedDevicesError</a></li>
+<li>mbed_tools_lib.exceptions.ToolsError</li>
+<li>builtins.Exception</li>
+<li>builtins.BaseException</li>
+</ul>
 </dd>
-<dt><code class="name"><a title="mbed_devices.exceptions" href="exceptions.html">mbed_devices.exceptions</a></code></dt>
+<dt id="mbed_devices.exceptions.MbedDevicesError"><code class="flex name class">
+<span>class <span class="ident">MbedDevicesError</span></span>
+<span>(</span><span>...)</span>
+</code></dt>
 <dd>
-<div class="desc"><p>Public exceptions raised by the package.</p></div>
-</dd>
-<dt><code class="name"><a title="mbed_devices.mbed_devices" href="mbed_devices.html">mbed_devices.mbed_devices</a></code></dt>
-<dd>
-<div class="desc"><p>API for listing devices.</p></div>
-</dd>
-<dt><code class="name"><a title="mbed_devices.mbed_tools" href="mbed_tools.html">mbed_devices.mbed_tools</a></code></dt>
-<dd>
-<div class="desc"><p>Integration with <a href="https://github.com/ARMmbed/mbed-tools.">https://github.com/ARMmbed/mbed-tools.</a></p></div>
+<div class="desc"><p>Base public exception for the mbed-devices package.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class MbedDevicesError(ToolsError):
+    &#34;&#34;&#34;Base public exception for the mbed-devices package.&#34;&#34;&#34;</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>mbed_tools_lib.exceptions.ToolsError</li>
+<li>builtins.Exception</li>
+<li>builtins.BaseException</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="mbed_devices.exceptions.DeviceLookupFailed" href="#mbed_devices.exceptions.DeviceLookupFailed">DeviceLookupFailed</a></li>
+</ul>
 </dd>
 </dl>
-</section>
-<section>
-</section>
-<section>
-</section>
-<section>
 </section>
 </article>
 <nav id="sidebar">
@@ -85,12 +108,19 @@ from mbed_devices import exceptions</code></pre>
 <ul></ul>
 </div>
 <ul id="index">
-<li><h3><a href="#header-submodules">Sub-modules</a></h3>
+<li><h3>Super-module</h3>
 <ul>
-<li><code><a title="mbed_devices.device" href="device.html">mbed_devices.device</a></code></li>
-<li><code><a title="mbed_devices.exceptions" href="exceptions.html">mbed_devices.exceptions</a></code></li>
-<li><code><a title="mbed_devices.mbed_devices" href="mbed_devices.html">mbed_devices.mbed_devices</a></code></li>
-<li><code><a title="mbed_devices.mbed_tools" href="mbed_tools.html">mbed_devices.mbed_tools</a></code></li>
+<li><code><a title="mbed_devices" href="index.html">mbed_devices</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="mbed_devices.exceptions.DeviceLookupFailed" href="#mbed_devices.exceptions.DeviceLookupFailed">DeviceLookupFailed</a></code></h4>
+</li>
+<li>
+<h4><code><a title="mbed_devices.exceptions.MbedDevicesError" href="#mbed_devices.exceptions.MbedDevicesError">MbedDevicesError</a></code></h4>
+</li>
 </ul>
 </li>
 </ul>
