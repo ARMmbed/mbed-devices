@@ -35,5 +35,5 @@ class TestReadOnlineId(TestCase):
         self.assertEqual(read_online_id(file_contents), OnlineId(target_type="platform", slug="THIS-IS_a_SLUG_123"))
 
     def test_none_if_not_found(self):
-        file_contents = f"window.location.replace(https://os.mbed.com/about);"
+        file_contents = "window.location.replace(https://os.mbed.com/about);"
         self.assertIsNone(read_online_id(file_contents))

@@ -163,8 +163,8 @@ class SystemDiskInformation:
         aggregator = WindowsDiskDataAggregator(self._data_loader)
         disk_data_by_serialnumber: dict = dict()  # The type is enforced so that mypy is happy.
         disk_data_by_label = dict()
-        for l in ComponentsLoader(self._data_loader, LogicalDisk).element_generator():
-            aggregation = aggregator.aggregate(cast(LogicalDisk, l))
+        for ld in ComponentsLoader(self._data_loader, LogicalDisk).element_generator():
+            aggregation = aggregator.aggregate(cast(LogicalDisk, ld))
             key = aggregation.get("uid").presumed_serial_number
             disk_data_list = disk_data_by_serialnumber.get(key, list())
             disk_data_list.append(aggregation)

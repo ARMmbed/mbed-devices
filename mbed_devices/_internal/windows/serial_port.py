@@ -19,7 +19,7 @@ from mbed_devices._internal.windows.component_descriptor import (
     UNKNOWN_VALUE,
 )
 
-CAPTION_PATTERN = re.compile(f"^.* [(](.*)[)]$")
+CAPTION_PATTERN = re.compile(r"^.* [(](.*)[)]$")
 
 
 def parse_caption(caption: str) -> str:
